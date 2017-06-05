@@ -1,0 +1,16 @@
+{
+  "name": "horseman",
+  "version": "0.0.1",
+  "description": "Headless Chrome Archiver",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "chrome-remote-interface": "^0.23.0",
+    "lighthouse": "^2.0.0",
+    "zeromq": "^4.2.3"
+  }
+}
