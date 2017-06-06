@@ -3,9 +3,10 @@ const {ChromeLauncher} = require('lighthouse/lighthouse-cli/chrome-launcher');
 const chrome = require('chrome-remote-interface');
 const zmq = require('zeromq');
 const mediaQueue = zmq.socket('push');
-mediaQueue.bindSync('ipc:///tmp/ichabod');
+mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
 const remoteRecording = require('./remoteRecord');
+const blobSink = require('./blobSink');
 
 /**
  * Launches a debugging instance of Chrome on port 9222.
@@ -45,6 +46,10 @@ function onConsole(e) {
   console.log("consoleEvent: ", e);
 }
 
+function onException(e) {
+  console.log("remote Exception Event", e);
+}
+
 async function doCapture(protocol) {
   const {Page, Runtime, Log} = protocol;
   try {
@@ -64,6 +69,7 @@ async function doCapture(protocol) {
       }
     });
     protocol.on("Runtime.consoleAPICalled", onConsole);
+    protocol.on("Runtime.exceptionThrown", onException);
     await remoteRecording.initializeRemoteRecording(Runtime);
     // await Page.startScreencast({
     //   format: "jpeg",

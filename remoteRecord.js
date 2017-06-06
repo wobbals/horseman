@@ -7,22 +7,34 @@ let remoteContainerId;
 let recorderIds = {};
 
 let reval = async function(script) {
-  console.log("Remote evaluate script ", script);
-  let evaluation = await Runtime.evaluate({
+  //console.log("Remote evaluate script ", script);
+  let result = await Runtime.evaluate({
     expression: script
   });
-  //console.log(`Evaluated script \`${script}\` result: ${evaluation}`);
-  return evaluation;
+  if (result.exceptionDetails) {
+    console.log("Remote evaluate script ", script);
+    console.log('result:', result);
+  }
+  return result;
+}
+
+let sidFor = function(subscriberId) {
+  return subscriberId.replace(new RegExp('-', 'g'), '_');
 }
 
 let createRecorder = async function(subscriberId) {
   try {
-    let sid = subscriberId.replace(new RegExp('-', 'g'), '_');
+    let sid = sidFor(subscriberId);
     let r = await reval(
       `var ms_${sid}=OT.subscribers.get("${subscriberId}")._.webRtcStream();` +
-      `var recorder_${sid} = new MediaRecorder(ms_${sid}, {mimeType: 'audio/webm'});` +
-      `recorder_${sid}.ondataavailable = e => {console.log(e.data.size); };` +
-      `recorder_${sid}.start(1000);` +
+      `var recorder_${sid} = new MediaRecorder(ms_${sid},`+
+      ` {mimeType: 'audio/webm'}`+
+      `);` +
+      `recorder_${sid}.ondataavailable = e => { `+
+      ` sendBlobToSink(e.data, '${subscriberId}', e.timecode); `+
+      //` console.log('sending blob to sink size='+e.data.size);`+
+      `};` +
+      `recorder_${sid}.start();` +
       `recorder_${sid};`
     );
     console.log('createRecorder: ', r);
@@ -38,8 +50,11 @@ let destroyRecorder = async function(subscriberId) {
 
 let requestRecorderData = async function() {
   for (let index in recorderIds) {
+    let sid = sidFor(index)
     console.log('get data for ', index, recorderIds[index]);
-    //let r = await Runtime.
+    let r = await reval(
+      `recorder_${sid}.requestData();`
+    );
   }
 }
 
@@ -94,6 +109,17 @@ let initializeRemoteRecording = async function(R) {
     let result = await reval(`var ${remoteContainer} = {}; ${remoteContainer}`);
     remoteContainerId = result.result.objectId;
     console.log("remote container id: " + remoteContainerId);
+
+    result = await reval(
+      `var sendBlobToSink = function(blob, sid, ts) { `+
+      `let xhr = new XMLHttpRequest();`+
+      `xhr.open('POST', 'http://localhost:3001/blobSink/'+sid);`+
+      `xhr.setRequestHeader('X-BLOB-TS', ts);`+
+      `xhr.send(blob);`+
+      ``+
+      `}`
+    );
+
     remoteInterval = setInterval(checkPeriodic, 1000);
 
   } catch (e) {
