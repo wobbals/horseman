@@ -19,7 +19,7 @@ function launchChrome(headless = true) {
     port: 9222,
     autoSelectChrome: true, // False to manually select which Chrome install.
     additionalFlags: [
-      '--window-size=1280,720',
+      '--window-size=640,480',
       '--disable-gpu',
       headless ? '--headless' : ''
     ]
@@ -50,15 +50,32 @@ function onException(e) {
   console.log("remote Exception Event", e);
 }
 
+function onLogEntry(e) {
+  console.log("log entry", e);
+}
+
 async function doCapture(protocol) {
-  const {Page, Runtime, Log} = protocol;
+  const {Page, Runtime, Log, Security} = protocol;
   try {
+    await Security.enable();
+    await Security.setOverrideCertificateErrors({override: true});
+    protocol.on("Security.certificateError", (e) => {
+      console.log("on security", e);
+      Security.handleCertificateError({
+        eventId: e.eventId,
+        action: 'continue'
+      })
+    });
+
     await Page.enable();
-    await Page.navigate({url: 'http://localhost:3000/denver'});
+    //await Page.navigate({url: 'http://localhost:3000/denver/readonly'});
+    await Page.navigate({url: 'https://b5c87d81.ngrok.io/denver/readonly'});
+
     console.log("navigated to meet");
     await Page.loadEventFired();
     console.log("loadEventFired");
     await Runtime.enable();
+    await Log.enable();
     protocol.on("Page.screencastFrame", async (event) => {
       console.log("onScreencastFrame");
       sendScreencastFrame(event.data, event.metadata.timestamp);
@@ -70,12 +87,13 @@ async function doCapture(protocol) {
     });
     protocol.on("Runtime.consoleAPICalled", onConsole);
     protocol.on("Runtime.exceptionThrown", onException);
+    protocol.on("Log.entryAdded", onLogEntry);
     await remoteRecording.initializeRemoteRecording(Runtime);
-    // await Page.startScreencast({
-    //   format: "jpeg",
-    //   quality: 100
-    // });
-    // console.log("startScreencast");
+    await Page.startScreencast({
+      format: "jpeg",
+      quality: 100
+    });
+    console.log("startScreencast");
   } catch (e) {
     console.log(e);
   }
@@ -104,6 +122,7 @@ try {
 }
 
 process.on('SIGINT', () => {
+  blobSink.cleanup();
   launcher.kill();
   console.log('Goodbye!');
   process.exit(0);

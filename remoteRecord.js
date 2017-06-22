@@ -35,6 +35,7 @@ let createRecorder = async function(subscriberId) {
       //` console.log('sending blob to sink size='+e.data.size);`+
       `};` +
       `recorder_${sid}.start();` +
+      //`recorder_${sid}.onstart = e => { recorder_${sid}.requestData(); };`+
       `recorder_${sid};`
     );
     console.log('createRecorder: ', r);
@@ -113,7 +114,7 @@ let initializeRemoteRecording = async function(R) {
     result = await reval(
       `var sendBlobToSink = function(blob, sid, ts) { `+
       `let xhr = new XMLHttpRequest();`+
-      `xhr.open('POST', 'http://localhost:3001/blobSink/'+sid);`+
+      `xhr.open('POST', 'https://localhost:3001/blobSink/'+sid);`+
       `xhr.setRequestHeader('X-BLOB-TS', ts);`+
       `xhr.send(blob);`+
       ``+
