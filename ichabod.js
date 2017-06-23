@@ -5,6 +5,7 @@ let ichabod_pid;
 let ichabod;
 
 let interruptSelf = function() {
+  console.log('interruptSelf');
   process.kill(process.pid, 'SIGINT');
 }
 
@@ -55,7 +56,7 @@ let launch = function() {
 
 let interrupt = function() {
   try {
-    process.kill(ichabod_pid, 2);
+    process.kill(ichabod_pid, 'SIGINT');
   } catch (e) { }
 }
 
