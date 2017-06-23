@@ -1,5 +1,5 @@
 const fs = require('fs');
-const {ChromeLauncher} = require('lighthouse/lighthouse-cli/chrome-launcher');
+const ChromeLauncher = require('chrome-launcher');
 const chrome = require('chrome-remote-interface');
 const zmq = require('zeromq');
 const mediaQueue = zmq.socket('push');
