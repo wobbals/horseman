@@ -128,4 +128,14 @@ let initializeRemoteRecording = async function(R) {
   }
 }
 
-module.exports.initializeRemoteRecording = initializeRemoteRecording;
+let stop = function() {
+  if (remoteInterval) {
+    clearInterval(remoteInterval);
+    remoteInterval = false;
+  }
+}
+
+module.exports = {
+  initializeRemoteRecording,
+  stop
+}

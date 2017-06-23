@@ -7,6 +7,22 @@ mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
 const remoteRecording = require('./remoteRecord');
 const blobSink = require('./blobSink');
+const validator = require('validator');
+const ichabod = require('./ichabod');
+
+var argv = require('minimist')(process.argv.slice(2));
+if (!argv.width) {
+  argv.width = 640;
+}
+if (!argv.height) {
+  argv.height = 480;
+}
+if (!argv.url || !validator.isURL(`${argv.url}`)) {
+  console.log(`missing parameter: --url`);
+  process.exit(1);
+}
+
+console.dir(argv);
 
 /**
  * Launches a debugging instance of Chrome on port 9222.
@@ -19,7 +35,7 @@ function launchChrome(headless = true) {
     port: 9222,
     autoSelectChrome: true, // False to manually select which Chrome install.
     additionalFlags: [
-      '--window-size=640,480',
+      `--window-size=${argv.width},${argv.height}`,
       '--disable-gpu',
       headless ? '--headless' : ''
     ]
@@ -60,7 +76,7 @@ async function doCapture(protocol) {
     await Security.enable();
     await Security.setOverrideCertificateErrors({override: true});
     protocol.on("Security.certificateError", (e) => {
-      console.log("on security", e);
+      console.log("onSecurity", e);
       Security.handleCertificateError({
         eventId: e.eventId,
         action: 'continue'
@@ -68,12 +84,13 @@ async function doCapture(protocol) {
     });
 
     await Page.enable();
-    //await Page.navigate({url: 'http://localhost:3000/denver/readonly'});
-    await Page.navigate({url: 'https://b5c87d81.ngrok.io/denver/readonly'});
+    await Page.navigate({url: argv.url});
+    // await Page.navigate({url: 'https://b5c87d81.ngrok.io/denver/readonly'});
 
     console.log("navigated to meet");
     await Page.loadEventFired();
     console.log("loadEventFired");
+    ichabod.launch();
     await Runtime.enable();
     await Log.enable();
     protocol.on("Page.screencastFrame", async (event) => {
@@ -124,6 +141,11 @@ try {
 process.on('SIGINT', () => {
   blobSink.cleanup();
   launcher.kill();
-  console.log('Goodbye!');
-  process.exit(0);
+  remoteRecording.stop();
+  if (ichabod.pid()) {
+    ichabod.interrupt();
+  } else {
+    console.log("Goodbye!");
+    process.exit(0);
+  }
 });
