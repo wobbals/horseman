@@ -37,7 +37,8 @@ function launchChrome(headless=true) {
       `--window-size=${argv.width},${argv.height}`,
       '--disable-gpu',
       headless ? '--headless' : ''
-    ]
+    ],
+    handleSIGINT: false
   });
 }
 
@@ -130,8 +131,7 @@ try {
   console.log(e);
 }
 
-process.on('SIGINT', () => {
-  console.log("INTERRUPT");
+let onInterrupt = () => {
   blobSink.cleanup();
   launcher.kill();
   remoteRecording.stop();
@@ -139,11 +139,16 @@ process.on('SIGINT', () => {
     //console.log('sending interrupt to ichabod');
     //ichabod.interrupt();
     console.log("waiting for ichabod to exit");
-    setInterval(() => {
-      console.log('still waiting...');
-    }, 1000);
   } else {
     console.log("Goodbye!");
     process.exit(0);
   }
+}
+
+process.on('SIGINT', () => {
+  onInterrupt();
+  setInterval(() => {
+    console.log('still waiting...');
+    //onInterrupt();
+  }, 1000);
 });
