@@ -36,6 +36,7 @@ function launchChrome(headless=true) {
     chromeFlags: [
       `--window-size=${argv.width},${argv.height}`,
       '--disable-gpu',
+      '--no-sandbox', // needed for Docker :-(
       headless ? '--headless' : ''
     ],
     handleSIGINT: false
@@ -114,10 +115,16 @@ async function doCapture(protocol) {
 var launcher;
 
 async function main() {
+  console.log('launching chrome...');
   launcher = await launchChrome();
+  console.log('successfully launched chrome!', launcher);
 
   chrome(async (protocol) => {
-    await doCapture(protocol);
+    try {
+      await doCapture(protocol);
+    } catch (e) {
+      console.log('doCapture: ', e);
+    }
     //launcher.kill();
   }).on('error', err => {
     throw Error('Cannot connect to Chrome:' + err);

@@ -1,6 +1,6 @@
 const child_process = require('child_process');
 const fs = require('fs');
-let ichabod_path = process.env.ICHABOD;
+let ichabod_path = process.env.ICHABOD || 'ichabod';
 let ichabod_pid;
 let ichabod;
 
@@ -14,12 +14,11 @@ try {
 } catch (e) { }
 
 function spawn() {
-  console.log(`attempting launch of subprocess ichabod ${ichabod_path}`);
+  console.log(`attempting launch of subprocess '${ichabod_path}'`);
   //const out = fs.openSync('./ichabod.log', 'a');
-  ichabod = child_process.spawn(ichabod_path, [] /* ichabod args */, {
-    detached: false,
-    stdio: [ 'ignore', 'pipe', 'pipe' ]
-  });
+  ichabod = child_process.spawn(
+    ichabod_path
+  );
   ichabod.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
   });
