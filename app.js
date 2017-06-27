@@ -8,6 +8,7 @@ mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 // const remoteRecording = require('./lib/remoteRecord');
 // const blobSink = require('./lib/blobSink');
 const ichabod = require('./lib/ichabod');
+const pulse = require('./lib/pulseAudio');
 const validator = require('validator');
 
 var argv = require('minimist')(process.argv.slice(2));
