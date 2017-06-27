@@ -5,10 +5,10 @@ const zmq = require('zeromq');
 const mediaQueue = zmq.socket('push');
 mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
-const remoteRecording = require('./remoteRecord');
-const blobSink = require('./blobSink');
+// const remoteRecording = require('./lib/remoteRecord');
+// const blobSink = require('./lib/blobSink');
+const ichabod = require('./lib/ichabod');
 const validator = require('validator');
-const ichabod = require('./ichabod');
 
 var argv = require('minimist')(process.argv.slice(2));
 if (!argv.width) {
@@ -99,7 +99,7 @@ async function doCapture(protocol) {
     protocol.on("Runtime.consoleAPICalled", onConsole);
     protocol.on("Runtime.exceptionThrown", onException);
     protocol.on("Log.entryAdded", onLogEntry);
-    await remoteRecording.initializeRemoteRecording(Runtime);
+    //await remoteRecording.initializeRemoteRecording(Runtime);
     await Page.startScreencast({
       format: "jpeg",
       quality: 100
@@ -139,9 +139,9 @@ try {
 }
 
 let onInterrupt = () => {
-  blobSink.cleanup();
+  //blobSink.cleanup();
   launcher.kill();
-  remoteRecording.stop();
+  //remoteRecording.stop();
   if (ichabod.pid()) {
     //console.log('sending interrupt to ichabod');
     //ichabod.interrupt();
