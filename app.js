@@ -138,10 +138,13 @@ try {
   console.log(e);
 }
 
+let interruptCount = 0;
 let onInterrupt = () => {
-  //blobSink.cleanup();
   launcher.kill();
-  //remoteRecording.stop();
+  if (interruptCount > 3) {
+    console.log(`received ${interruptCount} interrupt signals. exiting.`);
+    process.exit(2);
+  }
   if (ichabod.pid()) {
     //console.log('sending interrupt to ichabod');
     //ichabod.interrupt();
@@ -153,9 +156,10 @@ let onInterrupt = () => {
 }
 
 process.on('SIGINT', () => {
+  interruptCount++
   onInterrupt();
   setInterval(() => {
     console.log('still waiting...');
-    //onInterrupt();
+    onInterrupt();
   }, 1000);
 });
