@@ -90,7 +90,7 @@ async function doCapture(protocol) {
     await Page.navigate({url: argv.url});
     // await Page.navigate({url: 'https://b5c87d81.ngrok.io/denver/readonly'});
 
-    console.log("navigated to meet");
+    console.log(`navigated to ${argv.url}`);
     await Page.loadEventFired();
     console.log("loadEventFired");
     ichabod.launch({
