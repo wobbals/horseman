@@ -47,9 +47,9 @@ if (config.get("use_https")) {
 }
 
 var server_internal = http.createServer(app_internal);
-server.listen(internal_port);
-server.on('error', onError);
-server.on('listening', onListening);
+server_internal.listen(internal_port);
+server_internal.on('error', onError);
+server_internal.on('listening', onListeningInternal);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -102,6 +102,14 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
+
+function onListeningInternal() {
+  var addr = server_internal.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}
 
 function onListening() {
   var addr = server.address();

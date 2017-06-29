@@ -12,7 +12,11 @@ router.post('/callback', (req, res) => {
   } catch (e) {
     debug(e);
   }
-  res.status(204).send();
+  res.status(204).json({});
+});
+
+router.get('/callback', (req, res) => {
+  res.status(200).json({message: 'HELLO? YES THIS IS CALLBACK'});
 });
 
 

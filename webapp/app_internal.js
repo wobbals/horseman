@@ -8,6 +8,10 @@ var config = require('config');
 
 var routes = require('./routes/kennel_callback');
 
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+
 app.use(logger('combined'));
 app.use(bodyParser.json());
 

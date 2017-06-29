@@ -1,3 +1,4 @@
+const path = require('path');
 const fs = require('fs');
 const ChromeLauncher = require('chrome-launcher');
 const chrome = require('chrome-remote-interface');
@@ -12,12 +13,13 @@ mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 const ichabod = require('./lib/ichabod');
 const pulse = require('./lib/pulseAudio');
 const uploader = require('./lib/uploader');
+const kennel = require('./lib/kennel');
 
 const taskId = process.env.TASK_ID || uuid();
 console.log(`Using taskId ${taskId}`);
 
-const outfileName = `${process.cwd()}/${taskId}.mp4`
-const logPath = `${process.cwd()}/${taskId}.log`
+const outfileName = `${process.cwd()}/${taskId}.mp4`;
+const logPath = `${process.cwd()}/${taskId}.log`;
 
 var argv = require('minimist')(process.argv.slice(2));
 if (!argv.width) {
@@ -52,10 +54,21 @@ function launchChrome(headless=true) {
   });
 }
 
+let lastScreencastLogTime = new Date();
+let frameCount = 0;
 function sendScreencastFrame(data, timestamp) {
+  frameCount++;
   try {
     mediaQueue.send([data, new Date(timestamp * 1000).getTime()]);
-    console.log("sent screencast frame ", timestamp);
+    let delta = (new Date() - lastScreencastLogTime) / 1000;
+    if (delta > 10) {
+      console.log(
+        `sent ${frameCount} screencast frames in ${delta} seconds `+
+        `(avg ${frameCount / delta} fps)`
+      );
+      lastScreencastLogTime = new Date();
+      frameCount = 0;
+    }
   } catch (e) {
     console.log('tickScreenshot', e);
   }
@@ -96,10 +109,11 @@ async function doCapture(protocol) {
       output: outfileName,
       logPath: logPath
     });
+    kennel.tryPostback(taskId, {status: 'recording'});
     await Runtime.enable();
     await Log.enable();
     protocol.on("Page.screencastFrame", async (event) => {
-      console.log("onScreencastFrame");
+      //console.log("onScreencastFrame");
       sendScreencastFrame(event.data, event.metadata.timestamp);
       try {
         await Page.screencastFrameAck({sessionId: event.sessionId});
@@ -126,6 +140,7 @@ async function doCapture(protocol) {
 var launcher;
 
 async function main() {
+  kennel.tryPostback(taskId, {status: 'initializing'});
   console.log('launching chrome...');
   try {
     launcher = await launchChrome();
@@ -144,7 +159,9 @@ async function main() {
     //launcher.kill();
   }).on('error', err => {
     throw Error('Cannot connect to Chrome:' + err);
-    launcher.kill();
+    if (launcher) {
+      launcher.kill();
+    }
   });
 }
 
@@ -154,6 +171,11 @@ let onInterrupt = () => {
   launcher.kill();
   if (interruptCount > 3) {
     console.log(`received ${interruptCount} interrupt signals. exiting.`);
+    kennel.tryPostback(taskId, {
+      causedBy: "interrupted",
+      status: 'error',
+      error: 'interrupted'
+    });
     process.exit(2);
   }
   if (ichabod.pid()) {
@@ -162,12 +184,29 @@ let onInterrupt = () => {
     console.log("waiting for ichabod to exit");
   } else if (!uploadRequested) {
     uploadRequested = true;
-    uploader.upload(taskId, outfileName, (r, err) => {
-      console.log("archive upload: ", r);
-      uploader.compressAndUpload(taskId, logPath, (s, err) => {
-        console.log("log upload: ", s);
+    kennel.tryPostback(taskId, {status: 'uploading'});
+    uploader.upload(taskId, outfileName, (archiveKey, err) => {
+      if (!err) {
+        kennel.tryPostback(taskId, {
+          output_key: archiveKey,
+          output_bucket: process.env.S3_BUCKET
+        });
+      }
+      console.log("archive upload: ", archiveKey);
+      uploader.compressAndUpload(taskId, logPath, (logsKey, err) => {
+        if (!err) {
+          kennel.tryPostback(taskId, {
+            logs_key: logsKey,
+            logs_bucket: process.env.S3_BUCKET
+          });
+        }
+        console.log("log upload: ", logsKey);
         console.log("Goodbye!");
-        process.exit(0);
+        kennel.tryPostback(taskId, {status: 'complete', progress: 100});
+        setTimeout(() => {
+          // don't judge me.
+          process.exit(0);
+        }, 1000);
       });
     });
   }
@@ -187,7 +226,7 @@ try {
   setTimeout(() => {
     // For now, archives just run for 5 minutes. TODO: webhook eyyyy
     onInterrupt();
-  }, 300000);
+  }, 60000);
 } catch (e) {
   console.log(e);
 }
