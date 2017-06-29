@@ -2,6 +2,8 @@ const fs = require('fs');
 const ChromeLauncher = require('chrome-launcher');
 const chrome = require('chrome-remote-interface');
 const zmq = require('zeromq');
+const validator = require('validator');
+const uuid = require('uuid/v4')
 const mediaQueue = zmq.socket('push');
 mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
@@ -9,7 +11,13 @@ mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 // const blobSink = require('./lib/blobSink');
 const ichabod = require('./lib/ichabod');
 const pulse = require('./lib/pulseAudio');
-const validator = require('validator');
+const uploader = require('./lib/uploader');
+
+const taskId = process.env.TASK_ID || uuid();
+console.log(`Using taskId ${taskId}`);
+
+const outfileName = `${process.cwd()}/${taskId}.mp4`
+const logPath = `${process.cwd()}/${taskId}.log`
 
 var argv = require('minimist')(process.argv.slice(2));
 if (!argv.width) {
@@ -85,7 +93,10 @@ async function doCapture(protocol) {
     console.log("navigated to meet");
     await Page.loadEventFired();
     console.log("loadEventFired");
-    ichabod.launch();
+    ichabod.launch({
+      output: outfileName,
+      logPath: logPath
+    });
     await Runtime.enable();
     await Log.enable();
     protocol.on("Page.screencastFrame", async (event) => {
@@ -117,8 +128,13 @@ var launcher;
 
 async function main() {
   console.log('launching chrome...');
-  launcher = await launchChrome();
-  console.log('successfully launched chrome!', launcher);
+  try {
+    launcher = await launchChrome();
+    console.log('successfully launched chrome!', launcher);
+  } catch (e) {
+    console.log("chrome launch failure ", e);
+    return;
+  }
 
   chrome(async (protocol) => {
     try {
@@ -133,13 +149,8 @@ async function main() {
   });
 }
 
-try {
-  main();
-} catch (e) {
-  console.log(e);
-}
-
 let interruptCount = 0;
+let uploadRequested = false;
 let onInterrupt = () => {
   launcher.kill();
   if (interruptCount > 3) {
@@ -150,9 +161,16 @@ let onInterrupt = () => {
     //console.log('sending interrupt to ichabod');
     ichabod.interrupt();
     console.log("waiting for ichabod to exit");
-  } else {
-    console.log("Goodbye!");
-    process.exit(0);
+  } else if (!uploadRequested) {
+    uploadRequested = true;
+    uploader.upload(taskId, outfileName, (r, err) => {
+      console.log("archive upload: ", r);
+      uploader.upload(taskId, logPath, (s, err) => {
+        console.log("log upload: ", s);
+        console.log("Goodbye!");
+        process.exit(0);
+      });
+    });
   }
 }
 
@@ -164,3 +182,13 @@ process.on('SIGINT', () => {
     onInterrupt();
   }, 1000);
 });
+
+try {
+  main();
+  setTimeout(() => {
+    // For now, archives just run for 5 minutes. TODO: webhook eyyyy
+    onInterrupt();
+  }, 300000);
+} catch (e) {
+  console.log(e);
+}
