@@ -165,7 +165,7 @@ let onInterrupt = () => {
     uploadRequested = true;
     uploader.upload(taskId, outfileName, (r, err) => {
       console.log("archive upload: ", r);
-      uploader.upload(taskId, logPath, (s, err) => {
+      uploader.compressAndUpload(taskId, logPath, (s, err) => {
         console.log("log upload: ", s);
         console.log("Goodbye!");
         process.exit(0);
