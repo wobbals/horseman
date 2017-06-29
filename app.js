@@ -148,7 +148,7 @@ let onInterrupt = () => {
   }
   if (ichabod.pid()) {
     //console.log('sending interrupt to ichabod');
-    //ichabod.interrupt();
+    ichabod.interrupt();
     console.log("waiting for ichabod to exit");
   } else {
     console.log("Goodbye!");
