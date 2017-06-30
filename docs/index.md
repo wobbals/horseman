@@ -9,7 +9,7 @@ var request = require('request');
 var body = {
   width: 640,
   height: 480,
-  archiveURL: "https://wobbals.github.io/horseman/viewer.html"
+  url: "https://wobbals.github.io/horseman/viewer.html"
 };
 var myJobId;
 
