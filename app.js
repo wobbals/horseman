@@ -226,7 +226,7 @@ try {
   setTimeout(() => {
     // For now, archives just run for 5 minutes. TODO: webhook eyyyy
     onInterrupt();
-  }, 60000);
+  }, 300000);
 } catch (e) {
   console.log(e);
 }
