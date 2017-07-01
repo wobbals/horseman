@@ -95,8 +95,15 @@ var parseJobArgs = function(args) {
   })) {
     result.url = validator.stripLow(args.url);
   } else {
-    result.error = "Missing required parameter: archiveURL"
+    result.error = "Missing required parameter: url"
     return result;
+  }
+
+  // required parameters first
+  if (args.broadcastURL && validator.isURL(args.broadcastURL, {
+    protocols: ['rtmp']
+  })) {
+    result.broadcastURL = validator.stripLow(args.broadcastURL);
   }
 
   if (validator.isInt(args.width + '', {

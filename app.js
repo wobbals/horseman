@@ -18,7 +18,12 @@ const kennel = require('./lib/kennel');
 const taskId = process.env.TASK_ID || uuid();
 console.log(`Using taskId ${taskId}`);
 
-const outfileName = `${process.cwd()}/${taskId}.mp4`;
+let outfileName;
+if (process.env.BROADCAST_URL) {
+  outfileName = process.env.BROADCAST_URL;
+} else {
+  outfileName = `${process.cwd()}/${taskId}.mp4`;
+}
 const logPath = `${process.cwd()}/${taskId}.log`;
 
 var argv = require('minimist')(process.argv.slice(2));

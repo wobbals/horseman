@@ -30,6 +30,7 @@ const postTask = function(taskArgs, cb) {
   taskBody.environment.S3_PREFIX = config.get('s3_prefix');
   taskBody.environment.S3_REGION = config.get('s3_region');
   taskBody.environment.CALLBACK_URL = args.callbackURL;
+  taskBody.environment.BROADCAST_URL = args.broadcastURL;
   taskBody.environment.DEBUG = '*.*';
 
   debug(`task: ${JSON.stringify(taskBody)}`);
