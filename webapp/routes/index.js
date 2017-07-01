@@ -11,6 +11,10 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'HORSEMAN' });
 });
 
+router.get('/job', function(req, res) {
+  res.json({message: 'missing jobId'}).status(400);
+});
+
 router.post('/job', function(req, res) {
   let job_args = job_helper.parseJobArgs(req.body);
   if (job_args.error) {

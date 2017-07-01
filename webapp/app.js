@@ -9,6 +9,7 @@ var debug = require('debug')('horseman:ws');
 var config = require('config');
 
 var routes = require('./routes/index');
+var root = require('./routes/root');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,6 +23,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use('/', root);
 app.use('/horseman', routes);
 
 // catch 404 and forward to error handler
