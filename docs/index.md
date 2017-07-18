@@ -33,7 +33,30 @@ curl -v -H "Content-Type: application/json" \
 -d "{\"width\": \"720\", \
  \"height\": \"720\", \
  \"url\": \"https://wobbals.github.io/horseman/viewer.html\" \
- }"  https://kennel.wobbals.com/horseman/job | pretty
+ }"  https://kennel.wobbals.com/horseman/job
+
+```
+
+# Broadcast live sessions
+
+Same as with archiving, you can set the `broadcastURL` parameter to any RTMP
+URL to get your RTMP broadcast running based on any URL you wish. For example:
+
+```sh
+
+(
+SESSION_ID=""
+API_KEY=""
+TOKEN=""
+RTMP_URL="rtmp://live.twitch.tv/app/myStreamKey"
+WIDTH=1280
+HEIGHT=720
+curl -v -H "Content-Type: application/json" -d "{\"width\": \"${WIDTH}\", \
+ \"height\": \"${HEIGHT}\", \
+ \"url\": \"https://wobbals.github.io/horseman/viewer.html?sessionId=${SESSION_ID}&apiKey=${API_KEY}&token=${TOKEN}\", \
+ \"broadcastURL\": \"${RTMP_URL}\" \
+}"  https://kennel.wobbals.com/horseman/job
+)
 
 ```
 

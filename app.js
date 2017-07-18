@@ -66,7 +66,7 @@ function sendScreencastFrame(data, timestamp) {
   try {
     mediaQueue.send([data, new Date(timestamp * 1000).getTime()]);
     let delta = (new Date() - lastScreencastLogTime) / 1000;
-    if (delta > 2) {
+    if (delta > 5) {
       console.log(
         `sent ${frameCount} screencast frames in ${delta} seconds `+
         `(avg ${frameCount / delta} fps)`
