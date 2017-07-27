@@ -83,8 +83,12 @@ router.get('/job/:id/download', async function(req, res) {
     });
     return;
   }
-  if (!job.archiveKey || job.archiveBucket !== config.get("s3_bucket")) {
-    res.status(409).json({error: 'this server has no access to job archive'});
+  if (!job.archiveKey) {
+    res.status(404).json({error: 'no archive associated with this job'});
+    return;
+  }
+  if (job.archiveBucket !== config.get("s3_bucket")) {
+    res.status(500).json({error: 'server has no access to archive bucket'});
     return;
   }
   let downloadURL = null;
