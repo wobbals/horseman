@@ -27,10 +27,22 @@
         width: 100%;
         text-align: center;
     }
+    #clock {
+      color: white;
+      text-align: right;
+    }
     </style>
+    <script>
+    function startTime() {
+        var now = new Date();
+        document.getElementById('clock').innerHTML = now.toISOString();
+        var t = setTimeout(startTime, 30);
+    }
+    </script>
 </head>
-<body>
+<body onload='startTime();'>
   <div id="layoutContainer"></div>
+  <div id="clock"></div>
 </body>
 <script type="text/javascript" charset="utf-8">
   var layoutContainer = document.getElementById("layoutContainer");

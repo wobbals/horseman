@@ -124,8 +124,8 @@ let checkDownload = function() {
 let checkAssertions = function() {
   console.log(assertions);
 
-  expect(assertions.callbackStates).to.have.property('launched');
-  expect(assertions.callbackStates).to.have.property('processing');
+  expect(assertions.callbackStates).to.have.property('initializing');
+  expect(assertions.callbackStates).to.have.property('recording');
   expect(assertions.callbackStates).to.have.property('uploading');
   expect(assertions.callbackStates).to.have.property('complete');
 
@@ -139,7 +139,7 @@ let checkAssertions = function() {
   .below(assertions.callbackStates.complete);
 
   expect(assertions.pollStates).to.have.property('queued');
-  expect(assertions.pollStates).to.have.property('processing');
+  expect(assertions.pollStates).to.have.property('recording');
   expect(assertions.pollStates).to.have.property('complete');
 
   //sometimes launched state is too fast to catch
