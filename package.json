@@ -11,8 +11,8 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "chrome-launcher": "^0.2.1",
-    "chrome-remote-interface": "^0.23.0",
-    "cors": "^2.8.3",
+    "chrome-remote-interface": "^0.23.3",
+    "cors": "^2.8.4",
     "debug": "^2.6.8",
     "express": "^4.15.3",
     "minimist": "^1.2.0",
@@ -21,7 +21,7 @@
     "request": "^2.81.0",
     "request-progress": "^3.0.0",
     "s3": "^4.4.0",
-    "validator": "^7.1.0",
-    "zeromq": "^4.3.0"
+    "validator": "^7.2.0",
+    "zeromq": "^4.5.0"
   }
 }
