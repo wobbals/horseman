@@ -52,6 +52,8 @@ function launchChrome(headless=true) {
     chromeFlags: [
       `--window-size=${argv.width},${argv.height}`,
       '--disable-gpu',
+      '--hide-scrollbars',
+      '--user-agent=""',
       '--no-sandbox', // needed for Docker :-(
       headless ? '--headless' : ''
     ],
@@ -106,19 +108,13 @@ async function doCapture(protocol) {
 
     await Page.enable();
     await Page.navigate({url: argv.url});
-
     console.log(`navigated to ${argv.url}`);
     await Page.loadEventFired();
     console.log("loadEventFired");
-    ichabod.launch({
-      output: outfileName,
-      logPath: logPath
-    });
-    kennel.tryPostback(taskId, {status: 'recording'});
     await Runtime.enable();
     await Log.enable();
     protocol.on("Page.screencastFrame", async (event) => {
-      //console.log("onScreencastFrame");
+      // console.log("onScreencastFrame");
       sendScreencastFrame(event.data, event.metadata.timestamp);
       try {
         await Page.screencastFrameAck({sessionId: event.sessionId});
@@ -129,12 +125,16 @@ async function doCapture(protocol) {
     protocol.on("Runtime.consoleAPICalled", onConsole);
     protocol.on("Runtime.exceptionThrown", onException);
     protocol.on("Log.entryAdded", onLogEntry);
-    //await remoteRecording.initializeRemoteRecording(Runtime);
     await Page.startScreencast({
       format: "jpeg",
       quality: 100
     });
     console.log("startScreencast");
+    ichabod.launch({
+      output: outfileName,
+      logPath: logPath
+    });
+    kennel.tryPostback(taskId, {status: 'recording'});
   } catch (e) {
     console.log(e);
   }
