@@ -1,5 +1,7 @@
 const path = require('path');
 const fs = require('fs');
+const shm = require('./lib/shmHack');
+shm.enable();
 const ChromeLauncher = require('chrome-launcher');
 const chrome = require('chrome-remote-interface');
 const zmq = require('zeromq');
@@ -8,8 +10,6 @@ const uuid = require('uuid/v4')
 const mediaQueue = zmq.socket('push');
 mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
-// const remoteRecording = require('./lib/remoteRecord');
-// const blobSink = require('./lib/blobSink');
 const ichabod = require('./lib/ichabod');
 const pulse = require('./lib/pulseAudio');
 const uploader = require('./lib/uploader');
@@ -53,11 +53,13 @@ function launchChrome(headless=true) {
       `--window-size=${argv.width},${argv.height}`,
       '--disable-gpu',
       '--hide-scrollbars',
-      '--user-agent=""',
+      '--user-agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36"',
       '--no-sandbox', // needed for Docker :-(
+      '--no-zygote', // needed for Docker :-(
       headless ? '--headless' : ''
     ],
-    handleSIGINT: false
+    handleSIGINT: false,
+    logLevel: 'verbose'
   });
 }
 
