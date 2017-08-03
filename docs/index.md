@@ -40,7 +40,10 @@ curl -v -H "Content-Type: application/json" \
 ```
 
 This request will land in a queue, waiting to be assigned to a cluster node.
-For the demo server, the wait time until is expected to be 180 seconds.
+For the demo server, there are no warm servers kept in the cluster. If your
+job requires a cold node to be added to the cluster, the wait time until
+recording starts is expected to be 180 seconds. You can monitor when recording
+begins with the callbackURL.
 
 ## Check job status
 
