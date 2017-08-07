@@ -139,15 +139,17 @@ let onInterrupt = () => {
           logs_bucket: process.env.S3_BUCKET
         });
         kennel.tryPostback(taskId, {status: 'complete', progress: 100});
-        setTimeout(() => {
-          // don't judge me.
-          process.exit(0);
-        }, 1000);
       })
       .catch((err) => {
         console.log('compress and upload failure', err);
         console.log(err);
-      });      
+      })
+      .then(() => {
+        setTimeout(() => {
+          // don't judge me.
+          process.exit(0);
+        }, 1000);
+      });
     });
   }
 }
