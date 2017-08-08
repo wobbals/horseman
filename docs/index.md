@@ -96,10 +96,11 @@ curl -s https://kennel.wobbals.com/horseman/job/JOB_ID_HERE?token=TOKEN_HERE
 
 # Stop the archive
 
-At some point, you will be done with your job. Please stop it.
+At some point, you will be done with your job. Please stop it with a call to
+`/job/:id/stop` with the same credentials you would use to get job status.
 
 ```sh
-curl -X POST -s https://kennel.wobbals.com/horseman/job/JOB_ID_HERE?token=TOKEN_HERE
+curl -X POST -s https://kennel.wobbals.com/horseman/job/JOB_ID_HERE/stop?token=TOKEN_HERE
 {
     "message": "ok"
 }
