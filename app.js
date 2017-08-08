@@ -18,6 +18,7 @@ const pulse = require('./lib/pulseAudio');
 const uploader = require('./lib/uploader');
 const kennel = require('./lib/kennel');
 const headless = require('./lib/headless');
+const jobControl = require('./lib/jobControl');
 
 const taskId = process.env.TASK_ID || uuid();
 console.log(`Using taskId ${taskId}`);
@@ -164,6 +165,8 @@ process.on('SIGINT', () => {
 });
 
 try {
+  jobControl.onRemoteStop(onInterrupt);
+  jobControl.connect(process.env.REMOTE_CONTROL_URL, taskId);
   main();
   setTimeout(() => {
     // For now, archives just run for 5 minutes. TODO: webhook eyyyy
