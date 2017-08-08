@@ -13,5 +13,6 @@
   "redis_host": "REDIS_HOST",
   "redis_port": "REDIS_PORT",
   "kennel_base_url":"KENNEL_BASE_URL",
-  "internal_callback_base_url":"INTERNAL_CALLBACK_BASE_URL"
+  "internal_callback_base_url":"INTERNAL_CALLBACK_BASE_URL",
+  "internal_control_socket_url":"INTERNAL_CONTROL_SOCKET_URL"
 }

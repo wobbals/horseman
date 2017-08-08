@@ -30,6 +30,7 @@ const postTask = function(taskArgs, cb) {
   taskBody.environment.S3_PREFIX = config.get('s3_prefix');
   taskBody.environment.S3_REGION = config.get('s3_region');
   taskBody.environment.CALLBACK_URL = args.callbackURL;
+  taskBody.environment.REMOTE_CONTROL_URL = args.remoteControlURL;
   taskBody.environment.BROADCAST_URL = args.broadcastURL;
   taskBody.environment.DEBUG = '*.*';
 
@@ -39,9 +40,9 @@ const postTask = function(taskArgs, cb) {
     url: `${config.get('kennel_base_url')}/task`,
     json: taskBody
   }, (error, response, body) => {
-    debug('error:', error); // Print the error if one occurred
-    debug('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-    debug('body:', body); // Print the HTML for the Google homepage.
+    debug('error:', error);
+    debug('statusCode:', response && response.statusCode);
+    debug('body:', body); 
 
     cb(error, body)
   });

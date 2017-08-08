@@ -8,7 +8,8 @@
     "max_width": 1920,
     "max_height": 1080,
     "min_width": 320,
-    "min_height": 240
+    "min_height": 240,
+    "max_duration": 2160
   },
   "debug_queue": false,
   "use_https": false,

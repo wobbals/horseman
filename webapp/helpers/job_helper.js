@@ -127,9 +127,10 @@ var parseJobArgs = function(args) {
   if (args.callbackURL && validator.isURL(args.callbackURL)) {
     result.externalCallbackURL = args.callbackURL;
   }
+
   // intercept old external callback URL with our own internal endpoint
-  // TODO: move to config
   result.callbackURL = config.get('internal_callback_base_url');
+  result.remoteControlURL = config.get('internal_control_socket_url');
 
   return result;
 }

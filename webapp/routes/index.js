@@ -1,11 +1,12 @@
-var express = require('express');
-var router = express.Router();
-var debug = require('debug')('horseman:ws');
-var config = require('config');
-var hash_generator = require('random-hash-generator');
-var job_helper = require("../helpers/job_helper");
-var kennel = require("../helpers/kennel");
-var Job = require('../model/job');
+const express = require('express');
+const router = express.Router();
+const debug = require('debug')('horseman:ws');
+const config = require('config');
+const hash_generator = require('random-hash-generator');
+const job_helper = require("../helpers/job_helper");
+const kennel = require("../helpers/kennel");
+const Job = require('../model/job');
+const remoteControl = require('../helpers/remoteControl');
 
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'HORSEMAN' });
@@ -34,8 +35,7 @@ router.post('/job', function(req, res) {
   }
   kennel.postTask(req.body, (error, response) => {
     if (error) {
-      res.status(error.code ? error.code : 500);
-      res.json({error: error});
+      res.status(500).json({error: error});
     } else {
       job_data.status = 'queued';
       Job.persist(response.taskId, job_data);
@@ -43,6 +43,23 @@ router.post('/job', function(req, res) {
       res.json({jobId: response.taskId, accessToken: key_pair.key});
     }
   });
+});
+
+router.post('/job/:id/stop', async function(req, res) {
+  let tokenValidated = await Job.checkKey(req.params.id, req.query.token);
+  if (!tokenValidated) {
+    res.status(403).json({"error": "missing or invalid token"});
+    return;
+  }
+  if (remoteControl.terminateJob(req.params.id)) {
+    res.status(202).json({message: 'ok'});
+  } else {
+    res.status(409).json({
+      error: `no connection to job ${req.params.id}`,
+      message: `job is known, but no connection has been established. ` +
+      `has this job been started yet? try again later if not.`
+    });
+  }
 });
 
 router.get('/job/:id', async function(req, res) {

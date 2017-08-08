@@ -3,6 +3,8 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var app = express();
+let WSServer = require('ws').Server;
+
 var debug = require('debug')('horseman:ws:internal');
 var config = require('config');
 
@@ -47,6 +49,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;

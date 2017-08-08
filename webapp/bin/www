@@ -4,12 +4,15 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var app_internal = require('../app_internal');
-var debug = require('debug')('webapp:server');
-var http = require('http');
-var https = require('https');
-var config = require('config');
+const app = require('../app');
+const app_internal = require('../app_internal');
+const WSServer = require('ws').Server;
+const remoteControl = require('../helpers/remoteControl');
+
+const debug = require('debug')('webapp:server');
+const http = require('http');
+const https = require('https');
+const config = require('config');
 const fs = require('fs');
 
 /**
@@ -46,10 +49,15 @@ if (config.get("use_https")) {
   server.on('listening', onListening);
 }
 
-var server_internal = http.createServer(app_internal);
-server_internal.listen(internal_port);
+var server_internal = http.createServer();
+let wss = new WSServer({
+  server: server_internal
+});
+remoteControl.setupServer(wss);
+server_internal.on('request', app_internal);
 server_internal.on('error', onError);
 server_internal.on('listening', onListeningInternal);
+server_internal.listen(internal_port);
 
 /**
  * Normalize a port into a number, string, or false.
