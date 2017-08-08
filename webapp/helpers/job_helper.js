@@ -128,15 +128,13 @@ var parseJobArgs = function(args) {
     result.externalCallbackURL = args.callbackURL;
   }
 
-  if (args.maxDuration && validator.isInt(args.maxDuration)) {
-    result.maxDuration = Math.min(
-      args.maxDuration,
-      config.get('job_limits.max_duration')
-    );
+  if (validator.isInt(args.maxDuration + '', {
+    min: 0,
+    max: config.get('job_limits.max_duration')
+  })) {
+    result.maxDuration = parseInt(args.maxDuration);
   } else {
-    // 5 minutes for compatibilty with older requests that do not set max
-    // duration
-    result.maxDuration = 300;
+    result.maxDuration = config.get('job_defaults.duration');
   }
 
   // intercept old external callback URL with our own internal endpoint

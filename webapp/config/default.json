@@ -2,7 +2,8 @@
   "job_defaults": {
     "width": 640,
     "height": 480,
-    "ttl": 30000
+    "ttl": 30000,
+    "duration": 300
   },
   "job_limits": {
     "max_width": 1920,
