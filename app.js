@@ -168,10 +168,6 @@ try {
   jobControl.onRemoteStop(onInterrupt);
   jobControl.connect(process.env.REMOTE_CONTROL_URL, taskId);
   main();
-  setTimeout(() => {
-    // For now, archives just run for 5 minutes. TODO: webhook eyyyy
-    onInterrupt();
-  }, 300000);
 } catch (e) {
   console.log(e);
 }

@@ -10,7 +10,8 @@ var body = {
   width: 640,
   height: 480,
   url: "https://wobbals.github.io/horseman/viewer.html",
-  callbackURL: "https://asdf1234.ngrok.io"
+  callbackURL: "https://asdf1234.ngrok.io",
+  maxDuration: 300 // duration in seconds: set this to cap job length
 };
 var myJobId;
 

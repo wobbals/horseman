@@ -9,7 +9,7 @@
     "max_height": 1080,
     "min_width": 320,
     "min_height": 240,
-    "max_duration": 2160
+    "max_duration": 21600
   },
   "debug_queue": false,
   "use_https": false,
