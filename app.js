@@ -3,7 +3,7 @@ const fs = require('fs');
 console.log(`detected platform ${process.platform}`);
 if ('linux' === `${process.platform}`) {
   const shm = require('./lib/shmHack');
-  shm.enable();  
+  shm.enable();
 }
 const ChromeLauncher = require('chrome-launcher');
 const chrome = require('chrome-remote-interface');
@@ -98,7 +98,7 @@ async function main() {
 
 let interruptCount = 0;
 let uploadRequested = false;
-let onInterrupt = () => {
+let onInterrupt = function() {
   headless.kill();
   if (interruptCount > 3) {
     console.log(`received ${interruptCount} interrupt signals. exiting.`);
