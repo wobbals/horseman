@@ -93,6 +93,21 @@ curl -s https://kennel.wobbals.com/horseman/job/JOB_ID_HERE?token=TOKEN_HERE
 }
 ```
 
+# Stop the archive
+
+At some point, you will be done with your job. Please stop it.
+
+```sh
+curl -X POST -s https://kennel.wobbals.com/horseman/job/JOB_ID_HERE?token=TOKEN_HERE
+{
+    "message": "ok"
+}
+```
+
+**Note**: You cannot stop jobs that haven't connected to the cluster controller.
+In other words, if job status is not `recording`, the call to stop will fail.
+Please make sure you have appropriate retry logic in place to deal with this.
+
 ## Download the results (Archive only)
 
 After the job status is complete, you can download the archive:
