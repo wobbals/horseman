@@ -35,9 +35,9 @@ app.listen(httpPort, function () {
 });
 
 let body = {
-  width: 640,
-  height: 480,
-  url: 'https://www.youtube.com/watch?v=bCPEidaVzQU',
+  width: 1280,
+  height: 720,
+  url: 'http://www.infiniteyoutube.com/?v=ucZl6vQ_8Uo&p=n',
 };
 
 let startNgrok = function() {

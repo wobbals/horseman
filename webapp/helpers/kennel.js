@@ -43,7 +43,7 @@ const postTask = function(taskArgs, cb) {
   }, (error, response, body) => {
     debug('error:', error);
     debug('statusCode:', response && response.statusCode);
-    debug('body:', body); 
+    debug('body:', body);
 
     cb(error, body)
   });
@@ -69,8 +69,8 @@ const getTask = async function(taskId, cb) {
   request.get({
     url: `${config.get('kennel_base_url')}/task/${taskId}`
   }, (error, response, bodyStr) => {
+    debug(`kennel get task body: ${bodyStr}`);
     let body = JSON.parse(bodyStr);
-    debug(`kennel get task body: ${JSON.stringify(body)}`);
     if (error) {
       debug(`kennel get task error: ${error}`);
       cb({error: 'internal error: kennel query failed'});

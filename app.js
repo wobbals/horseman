@@ -166,7 +166,9 @@ process.on('SIGINT', () => {
 
 try {
   jobControl.onRemoteStop(onInterrupt);
-  jobControl.connect(process.env.REMOTE_CONTROL_URL, taskId);
+  if (process.env.REMOTE_CONTROL_URL) {
+    jobControl.connect(process.env.REMOTE_CONTROL_URL, taskId);
+  }
   // experiment: delay kicking off recording process for 10s.
   // hypothesis: newly created node is still having network hiccups
   setTimeout(() => {
