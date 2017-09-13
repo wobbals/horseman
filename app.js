@@ -147,7 +147,7 @@ let onInterrupt = function() {
       })
       .then(() => {
         setTimeout(() => {
-          debug('exiting normally');
+          console.log('exiting normally');
           // don't judge me.
           process.exit(0);
         }, 1000);
