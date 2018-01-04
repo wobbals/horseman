@@ -1,4 +1,4 @@
-FROM ichabod:latest
+FROM gst-ichabod:latest
 
 RUN mkdir -p /var/lib/horseman
 WORKDIR /var/lib/horseman

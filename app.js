@@ -23,12 +23,9 @@ const jobControl = require('./lib/jobControl');
 const taskId = process.env.TASK_ID || uuid();
 console.log(`Using taskId ${taskId}`);
 
-let outfileName;
-if (process.env.BROADCAST_URL) {
-  outfileName = process.env.BROADCAST_URL;
-} else {
-  outfileName = `${process.cwd()}/${taskId}.mp4`;
-}
+let outfileName = `${process.cwd()}/${taskId}.mp4`;
+let broadcastURL = process.env.BROADCAST_URL;
+
 const logPath = `${process.cwd()}/${taskId}.log`;
 
 var argv = require('minimist')(process.argv.slice(2));
@@ -47,7 +44,11 @@ console.dir(argv);
 
 let lastScreencastLogTime = new Date();
 let frameCount = 0;
+let sentEOS = false;
 function sendScreencastFrame(data, timestamp) {
+  if (sentEOS) {
+    return;
+  }
   frameCount++;
   try {
     mediaQueue.send([data, new Date(timestamp * 1000).getTime()]);
@@ -85,11 +86,12 @@ async function main() {
     headless.onScreencastFrame((event) => {
       sendScreencastFrame(event.data, event.metadata.timestamp);
     });
-    await headless.launch(argv.url, argv.width, argv.height);
     ichabod.launch({
       output: outfileName,
+      broadcast: broadcastURL,
       logPath: logPath
     });
+    await headless.launch(argv.url, argv.width, argv.height);
     kennel.tryPostback(taskId, {status: 'recording'});
   } catch (e) {
     console.log('main: ', e);
@@ -100,7 +102,12 @@ let interruptCount = 0;
 let uploadRequested = false;
 let onInterrupt = function() {
   headless.kill();
-  if (interruptCount > 3) {
+  if (!sentEOS) {
+    console.log("send ichabod EOS");
+    mediaQueue.send(["EOS"]);
+    sentEOS = true;
+  }
+  if (interruptCount > 1) {
     console.log(`received ${interruptCount} interrupt signals. exiting.`);
     kennel.tryPostback(taskId, {
       causedBy: "interrupted",
@@ -110,8 +117,8 @@ let onInterrupt = function() {
     process.exit(2);
   }
   if (ichabod.pid()) {
-    console.log(`sending interrupt to ichabod (pid=${ichabod.pid()})`);
-    ichabod.interrupt();
+    // console.log(`sending interrupt to ichabod (pid=${ichabod.pid()})`);
+    // ichabod.interrupt();
     console.log("waiting for ichabod to exit");
   } else if (!uploadRequested) {
     uploadRequested = true;
@@ -174,7 +181,7 @@ try {
   // hypothesis: newly created node is still having network hiccups
   setTimeout(() => {
     main();
-  }, 10000);
+  }, 3000);
 } catch (e) {
   console.log(e);
 }
