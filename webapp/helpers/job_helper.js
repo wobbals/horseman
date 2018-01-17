@@ -137,6 +137,12 @@ var parseJobArgs = function(args) {
     result.maxDuration = config.get('job_defaults.duration');
   }
 
+  if (validator.isBoolean(args.autostart + '')) {
+    result.autostart = args.autostart + '' == 'true';
+  } else {
+    result.autostart = config.get('job_defaults.autostart');
+  }
+
   // intercept old external callback URL with our own internal endpoint
   result.callbackURL = config.get('internal_callback_base_url');
   result.remoteControlURL = config.get('internal_control_socket_url');

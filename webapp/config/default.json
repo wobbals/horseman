@@ -3,7 +3,8 @@
     "width": 640,
     "height": 480,
     "ttl": 30000,
-    "duration": 300
+    "duration": 300,
+    "autostart": true
   },
   "job_limits": {
     "max_width": 1920,

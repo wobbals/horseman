@@ -19,6 +19,7 @@ const uploader = require('./lib/uploader');
 const kennel = require('./lib/kennel');
 const headless = require('./lib/headless');
 const jobControl = require('./lib/jobControl');
+const debug = require('debug')('horseman:app');
 
 const taskId = process.env.TASK_ID || uuid();
 console.log(`Using taskId ${taskId}`);
@@ -45,6 +46,10 @@ console.dir(argv);
 let lastScreencastLogTime = new Date();
 let frameCount = 0;
 let sentEOS = false;
+let started = false;
+let interruptCount = 0;
+let uploadRequested = false;
+
 function sendScreencastFrame(data, timestamp) {
   if (sentEOS) {
     return;
@@ -81,6 +86,7 @@ function onLogEntry(e) {
 var launcher;
 
 async function main() {
+  started = true;
   kennel.tryPostback(taskId, {status: 'initializing'});
   try {
     headless.onScreencastFrame((event) => {
@@ -98,8 +104,15 @@ async function main() {
   }
 }
 
-let interruptCount = 0;
-let uploadRequested = false;
+let onStart = function() {
+  debug('remote start requested');
+  if (started) {
+    debug('ignoring remote start: this process has already started.');
+  } else {
+    main();
+  }
+};
+
 let onInterrupt = function() {
   headless.kill();
   if (!sentEOS) {
@@ -174,14 +187,28 @@ process.on('SIGINT', () => {
 
 try {
   jobControl.onRemoteStop(onInterrupt);
+  jobControl.onRemoteStart(onStart);
   if (process.env.REMOTE_CONTROL_URL) {
+    // TODO: This is definitely a race condition with standby postback, for non
+    // autostart jobs. probably will see it backfire in the form of HTTP 409
+    // for calls to /job/:id/start -- YOU HEARD IT HERE FIRST CHARLES
     jobControl.connect(process.env.REMOTE_CONTROL_URL, taskId);
   }
-  // experiment: delay kicking off recording process for 10s.
-  // hypothesis: newly created node is still having network hiccups
-  setTimeout(() => {
-    main();
-  }, 3000);
+  debug(`autostart is ${process.env.AUTOSTART}`);
+  if (process.env.AUTOSTART === 'true') {
+    debug('schedule automatic start');
+    // experiment: delay kicking off recording process for a few seconds.
+    // hypothesis: newly created server is still having network hiccups.
+    // if you remove this timeout and start to see more chrome refreshes on
+    // pageload, then probably you should put it back.
+    setTimeout(() => {
+      main();
+    }, 3000);
+  } else {
+    debug('entering standby');
+    kennel.tryPostback(taskId, {status: 'standby'});
+    // TODO: this should have a separate expiry from the job control max limit
+  }
 } catch (e) {
   console.log(e);
 }

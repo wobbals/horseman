@@ -33,6 +33,7 @@ const postTask = function(taskArgs, cb) {
   taskBody.environment.REMOTE_CONTROL_URL = args.remoteControlURL;
   taskBody.environment.BROADCAST_URL = args.broadcastURL;
   taskBody.environment.MAX_DURATION = args.maxDuration;
+  taskBody.environment.AUTOSTART = args.autostart;
   taskBody.environment.DEBUG = '*.*';
 
   debug(`task: ${JSON.stringify(taskBody)}`);

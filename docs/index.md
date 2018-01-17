@@ -12,6 +12,7 @@ var body = {
   url: "https://wobbals.github.io/horseman/viewer.html",
   callbackURL: "https://asdf1234.ngrok.io",
   maxDuration: 300 // duration in seconds: set this to cap job length
+  autostart: true
 };
 var myJobId;
 
@@ -101,6 +102,21 @@ At some point, you will be done with your job. Please stop it with a call to
 
 ```sh
 curl -X POST -s https://kennel.wobbals.com/horseman/job/JOB_ID_HERE/stop?token=TOKEN_HERE
+{
+    "message": "ok"
+}
+```
+
+# (Manually) Start the archive
+
+By default, a job request will provision a server in about 3 minutes or less.
+Jobs will automatically start unless requested otherwise with `autostart: false`
+in the schedule request body. For non-autostart jobs, the job status will
+enter `standby` when a machine is running and waiting to start. When this
+happens, start the job with a call to `/job/:id/start`:
+
+```sh
+curl -X POST -s https://kennel.wobbals.com/horseman/job/JOB_ID_HERE/start?token=TOKEN_HERE
 {
     "message": "ok"
 }

@@ -62,6 +62,23 @@ router.post('/job/:id/stop', async function(req, res) {
   }
 });
 
+router.post('/job/:id/start', async function(req, res) {
+  let tokenValidated = await Job.checkKey(req.params.id, req.query.token);
+  if (!tokenValidated) {
+    res.status(403).json({"error": "missing or invalid token"});
+    return;
+  }
+  if (remoteControl.startJob(req.params.id)) {
+    res.status(202).json({message: 'ok'});
+  } else {
+    res.status(409).json({
+      error: `no remote connection to job ${req.params.id}`,
+      message: `job is known, but no connection has been established. ` +
+      `has this job entered standby yet? try again later if not.`
+    });
+  }
+});
+
 router.get('/job/:id', async function(req, res) {
   let tokenValidated = await Job.checkKey(req.params.id, req.query.token);
   if (!tokenValidated) {

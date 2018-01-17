@@ -7,7 +7,7 @@ let jobRemoteSockets = {};
 function getClientIp(req) {
   var ipAddress;
   // The request may be forwarded from local web server.
-  var forwardedIpsStr = req.headers['x-forwarded-for']; 
+  var forwardedIpsStr = req.headers['x-forwarded-for'];
   if (forwardedIpsStr) {
     // 'x-forwarded-for' header may return multiple IP addresses in
     // the format: "client IP, proxy 1 IP, proxy 2 IP" so take the
@@ -45,15 +45,23 @@ let setupServer = function(server) {
   debug('remote control server is ready');
 }
 
-let terminateJob = function(jobId) {
+let tryMessage = function(jobId, msg) {
   if (jobRemoteSockets[jobId]) {
-    debug('sending stop request to ' + jobId);
-    jobRemoteSockets[jobId].send('stop');
+    debug(`sending ${msg} to ${jobId}`);
+    jobRemoteSockets[jobId].send(msg);
     return true;
   } else {
     debug(`terminateJob: no socket for job ${jobId}`);
     return false;
   }
+}
+
+let terminateJob = function(jobId) {
+  return tryMessage(jobId, 'stop');
+}
+
+let startJob = function(jobId) {
+  return tryMessage(jobId, 'start');
 }
 
 const interval = setInterval(function ping() {
@@ -70,5 +78,6 @@ const interval = setInterval(function ping() {
 
 module.exports = {
   setupServer,
-  terminateJob
+  terminateJob,
+  startJob
 }
