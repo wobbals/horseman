@@ -1,0 +1,49 @@
+<html>
+<head>
+  <title>Layout Container Example</title>
+  <!-- <script src="https://static.opentok.com/v2/js/opentok.min.js"></script> -->
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <style type="text/css" media="screen">
+    #layoutContainer {
+      width: 100%;
+      height: 100%;
+      position:relative;
+    }
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color:#262422;
+    }
+    #layoutContainer > div {
+        background-color: #000;
+        display: inline-block;
+
+        transition-property: all;
+        transition-duration: 0.5s;
+    }
+
+    body > div#description {
+        color: #333;
+        margin: 0;
+        width: 100%;
+        text-align: center;
+    }
+    #clock {
+      color: white;
+      text-align: right;
+      position: absolute;
+      bottom: 0px;
+      right: 0px;
+    }
+    </style>
+    <script>
+    function startTime() {
+        var now = new Date();
+        document.getElementById('clock').innerHTML = now.toISOString();
+        var t = setTimeout(startTime, 30);
+    }
+    </script>
+</head>
+<body onload='startTime();'>
+  <div id="clock"></div>
+</body>
+</html>
