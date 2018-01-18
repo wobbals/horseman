@@ -38,6 +38,7 @@ let body = {
   width: 1280,
   height: 720,
   url: 'https://www.youtube.com/embed/?listType=playlist&list=RDucZl6vQ_8Uo&autoplay=1',
+  autostart: false
 };
 
 let startNgrok = function() {

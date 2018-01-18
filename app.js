@@ -195,7 +195,7 @@ try {
     jobControl.connect(process.env.REMOTE_CONTROL_URL, taskId);
   }
   debug(`autostart is ${process.env.AUTOSTART}`);
-  if (process.env.AUTOSTART === 'true') {
+  if (process.env.AUTOSTART === 'true' || process.env.AUTOSTART === undefined) {
     debug('schedule automatic start');
     // experiment: delay kicking off recording process for a few seconds.
     // hypothesis: newly created server is still having network hiccups.
