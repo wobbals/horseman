@@ -19,6 +19,8 @@ const uploader = require('./lib/uploader');
 const kennel = require('./lib/kennel');
 const headless = require('./lib/headless');
 const jobControl = require('./lib/jobControl');
+const blobSink = require('./lib/blobSink');
+
 const debug = require('debug')('horseman:app');
 
 const taskId = process.env.TASK_ID || uuid();
@@ -43,26 +45,53 @@ if (!argv.url || !validator.isURL(`${argv.url}`)) {
 
 console.dir(argv);
 
+let startTime = new Date();
 let lastScreencastLogTime = new Date();
 let frameCount = 0;
+let intervalAvg = 0;
+let lastTimestamp = 0;
 let sentEOS = false;
 let started = false;
 let interruptCount = 0;
 let uploadRequested = false;
 
+function updateFramerate(timestamp) {
+  if (0 == lastTimestamp) {
+    lastTimestamp = timestamp;
+    return;
+  }
+  let interval = timestamp - lastTimestamp;
+  intervalAvg = intervalAvg + (0.1 * (interval - intervalAvg));
+  lastTimestamp = timestamp;
+}
+
+function bootlegAdjustTimestamp(timestamp) {
+  return timestamp - intervalAvg;
+}
+
 function sendScreencastFrame(data, timestamp) {
   if (sentEOS) {
     return;
   }
+  updateFramerate(timestamp);
+  timestamp = bootlegAdjustTimestamp(timestamp);
   frameCount++;
   try {
+    if (process.env.DEBUG_FRAMES && (new Date() - startTime) > 5000) {
+      let buf = Buffer.from(data, 'base64');
+      fs.writeFileSync(`${timestamp}.jpg`, buf);
+    }
     mediaQueue.send([data, new Date(timestamp * 1000).getTime()]);
     let delta = (new Date() - lastScreencastLogTime) / 1000;
     if (delta > 5) {
       console.log(
         `sent ${frameCount} screencast frames in ${delta} seconds `+
-        `(avg ${frameCount / delta} fps)`
+        `(avg ${frameCount / delta} fps (ewma ${1/intervalAvg}))`
       );
+      if (process.env.DEBUG_FRAMES && (new Date() - startTime) > 10000) {
+        console.log("PEACE");
+        onInterrupt();
+      }
       lastScreencastLogTime = new Date();
       frameCount = 0;
     }
