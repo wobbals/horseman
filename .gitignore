@@ -5,3 +5,5 @@ CHROME/
 *.gz
 *.log
 test_calls.txt
+uploads
+
