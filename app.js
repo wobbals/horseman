@@ -144,6 +144,7 @@ let onStart = function() {
 
 let onInterrupt = function() {
   headless.kill();
+  blobSink.kill();
   if (!sentEOS) {
     console.log("send ichabod EOS");
     mediaQueue.send(["EOS"]);
