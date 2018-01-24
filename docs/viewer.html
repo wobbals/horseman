@@ -73,6 +73,10 @@
     otUrl = "https://static.opentok.com/v2/js/opentok.min.js";
   }
 
+  if ($_GET['disableClock'] === 'true') {
+    document.getElementById('clock').style.display = 'none';
+  }
+
   // ugly: sequentially load interdependent scripts
   $.getScript(otUrl, (data, textStatus, jqxhr) => {
     $.getScript("opentok-layout.min.js", () => {
