@@ -142,13 +142,24 @@ let onStart = function() {
   }
 };
 
-let onInterrupt = function() {
-  headless.kill();
-  blobSink.kill();
+let sendEOS = function() {
   if (!sentEOS) {
     console.log("send ichabod EOS");
     mediaQueue.send(["EOS"]);
     sentEOS = true;
+    setTimeout(() => {
+      console.log("EOS timer expired");
+      ichabod.interrupt();
+      onInterrupt();
+    }, 300000);
+  }
+}
+
+let onInterrupt = function() {
+  headless.kill();
+  blobSink.kill();
+  if (!sentEOS) {
+    sendEOS();
   }
   if (interruptCount > 1) {
     console.log(`received ${interruptCount} interrupt signals. exiting.`);
