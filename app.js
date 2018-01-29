@@ -20,6 +20,7 @@ const kennel = require('./lib/kennel');
 const headless = require('./lib/headless');
 const jobControl = require('./lib/jobControl');
 const blobSink = require('./lib/blobSink');
+const loadmon = require('./lib/loadmon');
 
 const debug = require('debug')('horseman:app');
 
