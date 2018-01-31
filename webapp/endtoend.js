@@ -38,7 +38,8 @@ let body = {
   width: 1280,
   height: 720,
   url: 'https://www.youtube.com/embed/?listType=playlist&list=RDucZl6vQ_8Uo&autoplay=1',
-  autostart: false
+  autostart: true,
+  maxDuration: 60
 };
 
 let startNgrok = function() {
@@ -94,7 +95,7 @@ let handleStatusCheck = async function(body) {
     console.log('received standby job status. manually start job.');
     request.post({
       url: `${barcURL}/job/${testJobId}/start?token=${testJobToken}`
-    }, (error, response, body) {
+    }, (error, response, body) => {
       if (error) {
         console.log("manual job start error: ", error);
       }
