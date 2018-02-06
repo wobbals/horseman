@@ -119,7 +119,8 @@ async function main() {
   started = true;
   kennel.tryPostback(taskId, {status: 'initializing'});
   try {
-    headless.onScreencastFrame((event) => {
+    headless.on('error', onInterrupt);
+    headless.on('screencastFrame', (event) => {
       sendScreencastFrame(event.data, event.metadata.timestamp);
     });
     ichabod.launch({
