@@ -11,6 +11,7 @@ const zmq = require('zeromq');
 const validator = require('validator');
 const uuid = require('uuid/v4')
 const mediaQueue = zmq.socket('push');
+const config = require('config');
 mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
 const ichabod = require('./lib/ichabod');
@@ -55,6 +56,7 @@ let sentEOS = false;
 let started = false;
 let interruptCount = 0;
 let uploadRequested = false;
+let isStandby = false;
 
 function updateFramerate(timestamp) {
   if (0 == lastTimestamp) {
@@ -117,6 +119,7 @@ var launcher;
 
 async function main() {
   started = true;
+  isStandby = false;
   kennel.tryPostback(taskId, {status: 'initializing'});
   try {
     headless.on('error', onInterrupt);
@@ -249,8 +252,20 @@ try {
     }, 3000);
   } else {
     debug('entering standby');
+    isStandby = true;
     kennel.tryPostback(taskId, {status: 'standby'});
-    // TODO: this should have a separate expiry from the job control max limit
+    setTimeout(() => {
+      if (isStandby) {
+        debug(`standby timeout expired. exiting.`);
+        // we never launched chrome or ichabod, so there's no sense in running
+        // the normal graceful exit sequence from onInterrupt
+        kennel.tryPostback(taskId, {
+          status: 'error',
+          error: 'standbyTimeout'
+        });
+        setTimeout(process.exit, 1000);
+      }
+    }, config.get('standby_timeout'));
   }
 } catch (e) {
   console.log(e);

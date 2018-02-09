@@ -1,0 +1,6 @@
+# maximum time in milliseconds for the process to remain in standby mode
+standby_timeout: 600000
+
+# maximum time in milliseconds recorder is allowed to run without fresh frames
+# from chrome screencast
+media_inactivity_timeout: 600000
