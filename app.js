@@ -175,7 +175,15 @@ let onInterrupt = function() {
     });
     process.exit(2);
   }
-  if (ichabod.pid()) {
+  if (isStandby) {
+    debug(`onInterrupt: task is still in standby. exiting without upload.`);
+    kennel.tryPostback(taskId, {
+      status: 'complete',
+      message: 'stoppedInStandby'
+    });
+    setTimeout(process.exit, 1000);
+    return;
+  } else if (ichabod.pid()) {
     // console.log(`sending interrupt to ichabod (pid=${ichabod.pid()})`);
     // ichabod.interrupt();
     console.log("waiting for ichabod to exit");

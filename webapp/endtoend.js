@@ -38,8 +38,8 @@ let body = {
   width: 1280,
   height: 720,
   url: 'https://www.youtube.com/embed/?listType=playlist&list=RDucZl6vQ_8Uo&autoplay=1',
-  autostart: true,
-  maxDuration: 60
+  autostart: false,
+  maxDuration: 300
 };
 
 let startNgrok = function() {
@@ -92,15 +92,15 @@ let handleStatusCheck = async function(body) {
     checkAssertions();
     process.exit(0);
   } else if ('standby' === parsed.status) {
-    console.log('received standby job status. manually start job.');
-    request.post({
-      url: `${barcURL}/job/${testJobId}/start?token=${testJobToken}`
-    }, (error, response, body) => {
-      if (error) {
-        console.log("manual job start error: ", error);
-      }
-      console.log('manually start job response ', body);
-    });
+    // console.log('received standby job status. manually start job.');
+    // request.post({
+    //   url: `${barcURL}/job/${testJobId}/start?token=${testJobToken}`
+    // }, (error, response, body) => {
+    //   if (error) {
+    //     console.log("manual job start error: ", error);
+    //   }
+    //   console.log('manually start job response ', body);
+    // });
   } else {
     console.log(`T+${(new Date().getTime() - startTime)/1000}s: ` +
     `job state ${parsed.status}`);
