@@ -126,6 +126,7 @@ async function main() {
     headless.on('screencastFrame', (event) => {
       sendScreencastFrame(event.data, event.metadata.timestamp);
     });
+    ichabod.on('exit', onInterrupt);
     ichabod.launch({
       output: outfileName,
       broadcast: broadcastURL,
@@ -167,7 +168,7 @@ let onInterrupt = function() {
     sendEOS();
   }
   if (interruptCount > 1) {
-    console.log(`received ${interruptCount} interrupt signals. exiting.`);
+    console.log(`received ${interruptCount} interrupt signals. force exit.`);
     kennel.tryPostback(taskId, {
       causedBy: "interrupted",
       status: 'error',
