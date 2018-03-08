@@ -34,6 +34,7 @@ const postTask = function(taskArgs, cb) {
   taskBody.environment.BROADCAST_URL = args.broadcastURL;
   taskBody.environment.MAX_DURATION = args.maxDuration;
   taskBody.environment.AUTOSTART = args.autostart;
+  taskBody.environment.SIP_DIALOUT = args.sipDialout;
   taskBody.environment.DEBUG = '*.*';
 
   debug(`task: ${JSON.stringify(taskBody)}`);
