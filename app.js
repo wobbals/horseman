@@ -22,6 +22,7 @@ const headless = require('./lib/headless');
 const jobControl = require('./lib/jobControl');
 const blobSink = require('./lib/blobSink');
 const loadmon = require('./lib/loadmon');
+const sipDialout = require('./lib/sipDialout');
 
 const debug = require('debug')('horseman:app');
 
@@ -57,6 +58,7 @@ let started = false;
 let interruptCount = 0;
 let uploadRequested = false;
 let isStandby = false;
+let rtpParams = null;
 
 function updateFramerate(timestamp) {
   if (0 == lastTimestamp) {
@@ -117,10 +119,7 @@ function onLogEntry(e) {
 
 var launcher;
 
-async function main() {
-  started = true;
-  isStandby = false;
-  kennel.tryPostback(taskId, {status: 'initializing'});
+async function launchChildProcesses() {
   try {
     headless.on('error', onInterrupt);
     headless.on('screencastFrame', (event) => {
@@ -130,12 +129,31 @@ async function main() {
     ichabod.launch({
       output: outfileName,
       broadcast: broadcastURL,
-      logPath: logPath
+      logPath: logPath,
+      rtpParams: rtpParams
     });
     await headless.launch(argv.url, argv.width, argv.height);
     kennel.tryPostback(taskId, {status: 'recording'});
   } catch (e) {
     console.log('main: ', e);
+  }
+}
+
+async function main() {
+  started = true;
+  isStandby = false;
+  if (process.env.SIP_DIALOUT /* && validator.isSipUri(SIP_DIALOUT) */) {
+    sipDialout.on('rtpOutputParams', (params) => {
+      rtpParams = params;
+      kennel.tryPostback(taskId, {status: 'initializing'});
+      launchChildProcesses();
+    });
+    sipDialout.start();
+    kennel.tryPostback(taskId, {status: 'dialing'});
+    sipDialout.invite(process.env.SIP_DIALOUT);
+  } else {
+    kennel.tryPostback(taskId, {status: 'initializing'});
+    launchChildProcesses();
   }
 }
 
