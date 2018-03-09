@@ -250,15 +250,26 @@ try {
     jobControl.connect(process.env.REMOTE_CONTROL_URL, taskId);
   }
   debug(`autostart is ${process.env.AUTOSTART}`);
+  debug(`launchDate is ${process.env.REQUESTED_LAUNCH_TIME}`);
+  debug(`nowDate is ${new Date().toISOString()}`);
+  let startDelay = 0;
+  if (validator.isISO8601(`${process.env.REQUESTED_LAUNCH_TIME}`)) {
+    let launchTime = new Date(`${process.env.REQUESTED_LAUNCH_TIME}`);
+    debug(`launchTime parsed: ${launchTime.toISOString()}`);
+    let launchDelay = launchTime - new Date();
+    debug(`launchDelay unadjusted: ${launchDelay}`);
+    startDelay = Math.max(0, launchDelay);
+    // safety check!
+    startDelay = Math.min(config.get('standby_timeout'), startDelay);
+  }
+  debug(`startDelay is ${startDelay}`);
   if (process.env.AUTOSTART === 'true' || process.env.AUTOSTART === undefined) {
-    debug('schedule automatic start');
-    // experiment: delay kicking off recording process for a few seconds.
-    // hypothesis: newly created server is still having network hiccups.
-    // if you remove this timeout and start to see more chrome refreshes on
-    // pageload, then probably you should put it back.
+    debug(`schedule automatic start (delay=${startDelay})`);
+    jobControl.pauseTimeout();
     setTimeout(() => {
+      jobControl.resetTimeout();
       main();
-    }, 3000);
+    }, startDelay);
   } else {
     debug('entering standby');
     isStandby = true;

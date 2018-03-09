@@ -143,6 +143,15 @@ var parseJobArgs = function(args) {
     result.autostart = config.get('job_defaults.autostart');
   }
 
+  // Accept ISO8601 and unix epoch times
+  if (validator.isISO8601(`${args.launchTime}`)) {
+    result.launchTime = `${args.launchTime}`;
+  } else if (validator.isInt(`${args.launchTime}`)) {
+    result.launchTime = new Date(args.launchTime).toISOString();
+  } else {
+    result.launchTime = 'immediate';
+  }
+
   // intercept old external callback URL with our own internal endpoint
   result.callbackURL = config.get('internal_callback_base_url');
   result.remoteControlURL = config.get('internal_control_socket_url');

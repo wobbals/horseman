@@ -35,6 +35,9 @@ const postTask = function(taskArgs, cb) {
   taskBody.environment.MAX_DURATION = args.maxDuration;
   taskBody.environment.AUTOSTART = args.autostart;
   taskBody.environment.DEBUG = '*.*';
+  // both the cluster scheduler and the job need to know about this
+  taskBody.environment.REQUESTED_LAUNCH_TIME = args.launchTime;
+  taskBody.requestedLaunchTime = args.launchTime;
 
   debug(`task: ${JSON.stringify(taskBody)}`);
 
