@@ -1,6 +1,8 @@
 # Archive live sessions
 
-Dive right in:
+Dive right in by starting a job:
+
+### Javascript
 
 ```js
 
@@ -11,8 +13,9 @@ var body = {
   height: 480,
   url: "https://wobbals.github.io/horseman/viewer.html",
   callbackURL: "https://asdf1234.ngrok.io",
-  maxDuration: 300 // duration in seconds: set this to cap job length
-  autostart: true
+  maxDuration: 300
+  autostart: true,
+  launchTime: new Date(new Date().getTime() + 300000).toISOString()
 };
 var myJobId;
 
@@ -29,6 +32,7 @@ request.post({
 
 ```
 
+### Shell
 
 ```sh
 
@@ -41,11 +45,29 @@ curl -v -H "Content-Type: application/json" \
 
 ```
 
-This request will land in a queue, waiting to be assigned to a cluster node.
-For the demo server, there are no warm servers kept in the cluster. If your
-job requires a cold node to be added to the cluster, the wait time until
-recording starts is expected to be 180 seconds. You can monitor when recording
-begins with the callbackURL.
+Request will land in a queue, waiting to be assigned to a cluster node.
+Job wait time is generally expected to be between 10 and 180 seconds.
+You can monitor when recording begins with the callbackURL.
+
+## Input Parameters
+
+* `width`, `height`: The dimensions of the recording
+  * Default: 640x480
+  * Max: 1920x1080
+  * Min: 320x240
+  * **Recommended**: 1280x720
+* `url`: The URL the recorder will attempt to load and capture
+* `callbackURL`: Where status updates will be posted back to the requester
+* `maxDuration`: Global cap on job run time, in seconds
+  * Default: 300
+  * Maximum: 21600
+  * **Recommended**: 7200
+* `autostart`: `true` will start recording without further callbacks. `false`
+  requires the use of a follow-up call to
+  [`/start`](#manually-start-the-archive), once the job has entered
+  `standby` mode.
+* `launchTime`: an ISO8601 string to indicate when the job should start. Used
+  primarily for capacity planning.
 
 ## Check job status
 
