@@ -143,19 +143,19 @@ async function launchChildProcesses() {
 async function main() {
   started = true;
   isStandby = false;
-  if (process.env.SIP_DIALOUT /* && validator.isSipUri(SIP_DIALOUT) */) {
-    sipDialout.on('rtpOutputParams', (params) => {
-      rtpParams = params;
-      kennel.tryPostback(taskId, {status: 'initializing'});
-      launchChildProcesses();
-    });
-    sipDialout.start();
-    kennel.tryPostback(taskId, {status: 'dialing'});
-    sipDialout.invite(process.env.SIP_DIALOUT);
-  } else {
+  // if (process.env.SIP_DIALOUT /* && validator.isSipUri(SIP_DIALOUT) */) {
+  //   sipDialout.on('rtpOutputParams', (params) => {
+  //     rtpParams = params;
+  //     kennel.tryPostback(taskId, {status: 'initializing'});
+  //     launchChildProcesses();
+  //   });
+  //   sipDialout.start();
+  //   kennel.tryPostback(taskId, {status: 'dialing'});
+  //   sipDialout.invite(process.env.SIP_DIALOUT);
+  // } else {
     kennel.tryPostback(taskId, {status: 'initializing'});
     launchChildProcesses();
-  }
+  // }
 }
 
 let onStart = function() {
