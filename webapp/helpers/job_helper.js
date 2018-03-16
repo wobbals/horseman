@@ -156,6 +156,10 @@ var parseJobArgs = function(args) {
     result.launchTime = 'immediate';
   }
 
+  if (validator.isBoolean(args.individualStreamRecord + '')) {
+    result.individualStreamRecord = args.individualStreamRecord;
+  }
+
   // intercept old external callback URL with our own internal endpoint
   result.callbackURL = config.get('internal_callback_base_url');
   result.remoteControlURL = config.get('internal_control_socket_url');

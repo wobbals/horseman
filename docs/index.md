@@ -15,7 +15,8 @@ var body = {
   callbackURL: "https://asdf1234.ngrok.io",
   maxDuration: 300
   autostart: true,
-  launchTime: new Date(new Date().getTime() + 300000).toISOString()
+  launchTime: new Date(new Date().getTime() + 300000).toISOString(),
+  individualStreamRecord: false
 };
 var myJobId;
 
@@ -68,6 +69,9 @@ You can monitor when recording begins with the callbackURL.
   `standby` mode.
 * `launchTime`: an ISO8601 string to indicate when the job should start. Used
   primarily for capacity planning.
+* `individualStreamRecord`: Set to `true` to attempt to capture individual
+  media streams from OpenTok subscribers. Note that the download for the job
+  will come as a `.tar` archive, rather than standalone `.mp4`.
 
 ## Check job status
 

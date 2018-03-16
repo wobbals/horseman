@@ -34,6 +34,9 @@ const postTask = function(taskArgs, cb) {
   taskBody.environment.BROADCAST_URL = args.broadcastURL;
   taskBody.environment.MAX_DURATION = args.maxDuration;
   taskBody.environment.AUTOSTART = args.autostart;
+  if (args.individualStreamRecord) {
+    taskBody.environment.INDIVIDUAL_STREAM_RECORD = 1;
+  }
   taskBody.environment.SIP_DIALOUT = args.sipDialout;
   taskBody.environment.DEBUG = '*.*';
   // both the cluster scheduler and the job need to know about this

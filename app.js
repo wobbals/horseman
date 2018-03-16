@@ -16,11 +16,9 @@ mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
 const ichabod = require('./lib/ichabod');
 const pulse = require('./lib/pulseAudio');
-const uploader = require('./lib/uploader');
 const kennel = require('./lib/kennel');
 const headless = require('./lib/headless');
 const jobControl = require('./lib/jobControl');
-const blobSink = require('./lib/blobSink');
 const loadmon = require('./lib/loadmon');
 const sipDialout = require('./lib/sipDialout');
 
@@ -28,6 +26,9 @@ const debug = require('debug')('horseman:app');
 
 const taskId = process.env.TASK_ID || uuid();
 console.log(`Using taskId ${taskId}`);
+
+const uploader = require('./lib/uploader')({taskId: taskId});
+const blobSink = require('./lib/blobSink')({taskId: taskId});
 
 let outfileName = `${process.cwd()}/${taskId}.mp4`;
 let broadcastURL = process.env.BROADCAST_URL;
@@ -179,7 +180,7 @@ let sendEOS = function() {
   }
 }
 
-let onInterrupt = function() {
+let onInterrupt = async function() {
   headless.kill();
   blobSink.kill();
   if (!sentEOS) {
@@ -209,43 +210,38 @@ let onInterrupt = function() {
   } else if (!uploadRequested) {
     uploadRequested = true;
     kennel.tryPostback(taskId, {status: 'uploading'});
-    uploader.upload(taskId, outfileName, (archiveKey, err) => {
-      if (!err) {
-        kennel.tryPostback(taskId, {
-          output_key: archiveKey,
-          output_bucket: process.env.S3_BUCKET
-        });
-        console.log("archive upload: ", archiveKey);
-      } else {
-        console.log(err);
-      }
-      let compressedFiles = [];
-      compressedFiles.push(logPath);
-      let chromeLogs = headless.logPaths();
-      for (let logIndex in chromeLogs) {
-        compressedFiles.push(chromeLogs[logIndex]);
-      }
-      uploader.compressAndUploadMany(taskId, compressedFiles)
-      .then((result) => {
-        console.log("log upload results: ", result);
-        kennel.tryPostback(taskId, {
-          logs_key: result[0],
-          logs_bucket: process.env.S3_BUCKET
-        });
-        kennel.tryPostback(taskId, {status: 'complete', progress: 100});
-      })
-      .catch((err) => {
-        console.log('compress and upload failure', err);
-        console.log(err);
-      })
-      .then(() => {
-        setTimeout(() => {
-          console.log('exiting normally');
-          // don't judge me.
-          process.exit(0);
-        }, 1000);
+    let mainArchive;
+    let blobPaths = blobSink.uploadPaths();
+    if (blobPaths.length > 0) {
+      let paths = [];
+      blobPaths.push(outfileName);
+      mainArchive = uploader.archiveAndAddFiles(blobPaths);
+    } else {
+      mainArchive = uploader.addFile(outfileName);
+    }
+    uploader.compressAndAddFile(logPath);
+    let chromeLogs = headless.logPaths();
+    for (let logIndex in chromeLogs) {
+      uploader.compressAndAddFile(chromeLogs[logIndex]);
+    }
+    try {
+      await uploader.finalize();
+      let archiveKey = await mainArchive;
+      debug(`mainArchive: ${archiveKey}`);
+      kennel.tryPostback(taskId, {
+        output_key: archiveKey,
+        output_bucket: process.env.S3_BUCKET
       });
-    });
+      kennel.tryPostback(taskId, {status: 'complete', progress: 100});
+    } catch (err) {
+      debug('compress and upload failure!', err);
+      kennel.tryPostback(taskId, {status: 'error', message: 'upload failure'});
+    }
+    setTimeout(() => {
+      console.log('exiting normally');
+      // don't judge me.
+      process.exit(0);
+    }, 1000);
   }
 }
 

@@ -37,10 +37,10 @@ app.listen(httpPort, function () {
 let body = {
   width: 640,
   height: 480,
-  url: 'https://www.time.gov/',
+  url: 'https://wobbals.github.io/horseman/viewer.html?token=T1==cGFydG5lcl9pZD00NTMyODc3MiZzaWc9YzI4NWUxNGY0Y2E0ZDFjOTlkY2E0OWY4MmE3NTU1M2QxZjhkZTAyMzpzZXNzaW9uX2lkPTJfTVg0ME5UTXlPRGMzTW41LU1UVXlNVEl5TkRZeE5USXpPSDVsU0hsc00xVnpVVGg1Y1hSSVJrcEhWRmc1YVVsSWFHcC1mZyZjcmVhdGVfdGltZT0xNTIxMjI0NjE4Jm5vbmNlPTAuMzUyMDEzNTA4Mjc4MTc3OSZyb2xlPXB1Ymxpc2hlciZleHBpcmVfdGltZT0xNTIxMzExMDE4JmNvbm5lY3Rpb25fZGF0YT0lN0IlMjJ1c2VyTmFtZSUyMiUzQSUyMkFub255bW91cyUyMFVzZXIyMTc0JTIyJTdEJmluaXRpYWxfbGF5b3V0X2NsYXNzX2xpc3Q9&sessionId=2_MX40NTMyODc3Mn5-MTUyMTIyNDYxNTIzOH5lSHlsM1VzUTh5cXRIRkpHVFg5aUlIaGp-fg&apiKey=45328772',
   autostart: true,
-  maxDuration: 60,
-  launchTime: new Date(new Date().getTime() + 300000).toISOString()
+  maxDuration: 30,
+  individualStreamRecord: true
 };
 
 let startNgrok = function() {
