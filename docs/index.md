@@ -7,10 +7,11 @@ Dive right in by starting a job:
 ```js
 
 var request = require('request');
+var barcURL = 'https://kennel.wobbals.com/horseman';
 
 var body = {
-  width: 640,
-  height: 480,
+  width: 1280,
+  height: 720,
   url: "https://wobbals.github.io/horseman/viewer.html",
   callbackURL: "https://asdf1234.ngrok.io",
   maxDuration: 300
@@ -38,8 +39,8 @@ request.post({
 ```sh
 
 curl -v -H "Content-Type: application/json" \
--d "{\"width\": \"720\", \
- \"height\": \"640\", \
+-d "{\"width\": \"1280\", \
+ \"height\": \"720\", \
  \"url\": \"https://wobbals.github.io/horseman/viewer.html\", \
  \"callbackURL\":\"https://asdf1234.ngrok.io\"\ \
  }"  https://kennel.wobbals.com/horseman/job
