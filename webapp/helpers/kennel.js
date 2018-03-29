@@ -1,7 +1,7 @@
 const request = require('request');
 const config = require('config');
 const jobHelper = require('./job_helper');
-const debug = require('debug')('horseman:kennel');
+const debug = require('debug')('horseman:helpers:kennel');
 const validator = require('validator');
 const Job = require('../model/job');
 
@@ -59,6 +59,7 @@ const postTask = function(taskArgs, cb) {
 module.exports.postTask = postTask;
 
 const getTask = async function(taskId, cb) {
+  debug(`getTask: taskId=${taskId}`);
   if (!validator.isUUID(taskId)) {
     cb({error: `invalid taskId ${taskId}`});
     return;
@@ -79,7 +80,7 @@ const getTask = async function(taskId, cb) {
   }, (error, response, bodyStr) => {
     debug(`kennel get task body: ${bodyStr}`);
     let body = JSON.parse(bodyStr);
-    if (error) {
+    if (error || !body) {
       debug(`kennel get task error: ${error}`);
       cb({error: 'internal error: kennel query failed'});
       return;
