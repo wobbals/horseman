@@ -37,7 +37,7 @@ app.listen(httpPort, function () {
 let body = {
   width: 640,
   height: 480,
-  url: 'http://time.gov'
+  url: 'http://time.gov',
   autostart: true,
   maxDuration: 60
 };
