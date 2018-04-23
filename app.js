@@ -20,7 +20,7 @@ const kennel = require('./lib/kennel');
 const headless = require('./lib/headless');
 const jobControl = require('./lib/jobControl');
 const loadmon = require('./lib/loadmon');
-const sipDialout = require('./lib/sipDialout');
+const sipDialout = process.env.SIP_DIALOUT ? require('./lib/sipDialout') : null;
 
 const debug = require('debug')('horseman:app');
 
@@ -143,7 +143,7 @@ async function launchChildProcesses() {
 async function main() {
   started = true;
   isStandby = false;
-  if (process.env.SIP_DIALOUT /* && validator.isSipUri(SIP_DIALOUT) */) {
+  if (sipDialout) {
     sipDialout.on('rtpOutputParams', (params) => {
       rtpParams = params;
       kennel.tryPostback(taskId, {status: 'initializing'});
@@ -185,7 +185,9 @@ let sendEOS = function() {
 let onInterrupt = async function() {
   headless.kill();
   blobSink.kill();
-  sipDialout.hup();
+  if (sipDialout) {
+    sipDialout.hup();
+  }
   if (!sentEOS) {
     sendEOS();
   }
