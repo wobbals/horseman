@@ -7,12 +7,9 @@ if ('linux' === `${process.platform}`) {
 }
 const ChromeLauncher = require('chrome-launcher');
 const chrome = require('chrome-remote-interface');
-const zmq = require('zeromq');
 const validator = require('validator');
 const uuid = require('uuid/v4')
-const mediaQueue = zmq.socket('push');
 const config = require('config');
-mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
 const ichabod = require('./lib/ichabod');
 const pulse = require('./lib/pulseAudio');
@@ -87,7 +84,10 @@ function sendScreencastFrame(data, timestamp) {
       let buf = Buffer.from(data, 'base64');
       fs.writeFileSync(`${timestamp}.jpg`, buf);
     }
-    mediaQueue.send([data, new Date(timestamp * 1000).getTime()]);
+    ichabod.sendFrame({
+      data: data,
+      timestamp: new Date(timestamp * 1000).getTime()
+    });
     let delta = (new Date() - lastScreencastLogTime) / 1000;
     if (delta > 5) {
       console.log(
@@ -169,19 +169,6 @@ let onStart = function() {
   }
 };
 
-let sendEOS = function() {
-  if (!sentEOS) {
-    console.log("send ichabod EOS");
-    mediaQueue.send(["EOS"]);
-    sentEOS = true;
-    setTimeout(() => {
-      console.log("EOS timer expired");
-      ichabod.interrupt();
-      onInterrupt();
-    }, 300000);
-  }
-}
-
 let onInterrupt = async function() {
   headless.kill();
   blobSink.kill();
@@ -189,7 +176,13 @@ let onInterrupt = async function() {
     sipDialout.hup();
   }
   if (!sentEOS) {
-    sendEOS();
+    ichabod.sendEOS();
+    sentEOS = true;
+    setTimeout(() => {
+      debug("onInterrupt.eosTimeout: EOS timer expired");
+      ichabod.interrupt();
+      onInterrupt();
+    }, 300000);
   }
   if (interruptCount > 1) {
     console.log(`received ${interruptCount} interrupt signals. force exit.`);
