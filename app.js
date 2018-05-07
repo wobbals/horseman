@@ -7,12 +7,9 @@ if ('linux' === `${process.platform}`) {
 }
 const ChromeLauncher = require('chrome-launcher');
 const chrome = require('chrome-remote-interface');
-const zmq = require('zeromq');
 const validator = require('validator');
 const uuid = require('uuid/v4')
-const mediaQueue = zmq.socket('push');
 const config = require('config');
-mediaQueue.bindSync('ipc:///tmp/ichabod-screencast');
 
 const ichabod = require('./lib/ichabod');
 const pulse = require('./lib/pulseAudio');
@@ -20,7 +17,6 @@ const kennel = require('./lib/kennel');
 const headless = require('./lib/headless');
 const jobControl = require('./lib/jobControl');
 const loadmon = require('./lib/loadmon');
-const sipDialout = require('./lib/sipDialout');
 
 const debug = require('debug')('horseman:app');
 
@@ -87,7 +83,10 @@ function sendScreencastFrame(data, timestamp) {
       let buf = Buffer.from(data, 'base64');
       fs.writeFileSync(`${timestamp}.jpg`, buf);
     }
-    mediaQueue.send([data, new Date(timestamp * 1000).getTime()]);
+    ichabod.sendFrame({
+      data: data,
+      timestamp: new Date(timestamp * 1000).getTime()
+    });
     let delta = (new Date() - lastScreencastLogTime) / 1000;
     if (delta > 5) {
       console.log(
@@ -143,19 +142,8 @@ async function launchChildProcesses() {
 async function main() {
   started = true;
   isStandby = false;
-  // if (process.env.SIP_DIALOUT /* && validator.isSipUri(SIP_DIALOUT) */) {
-  //   sipDialout.on('rtpOutputParams', (params) => {
-  //     rtpParams = params;
-  //     kennel.tryPostback(taskId, {status: 'initializing'});
-  //     launchChildProcesses();
-  //   });
-  //   sipDialout.start();
-  //   kennel.tryPostback(taskId, {status: 'dialing'});
-  //   sipDialout.invite(process.env.SIP_DIALOUT);
-  // } else {
-    kennel.tryPostback(taskId, {status: 'initializing'});
-    launchChildProcesses();
-  // }
+  kennel.tryPostback(taskId, {status: 'initializing'});
+  launchChildProcesses();
 }
 
 let onStart = function() {
@@ -167,24 +155,17 @@ let onStart = function() {
   }
 };
 
-let sendEOS = function() {
-  if (!sentEOS) {
-    console.log("send ichabod EOS");
-    mediaQueue.send(["EOS"]);
-    sentEOS = true;
-    setTimeout(() => {
-      console.log("EOS timer expired");
-      ichabod.interrupt();
-      onInterrupt();
-    }, 300000);
-  }
-}
-
 let onInterrupt = async function() {
   headless.kill();
   blobSink.kill();
   if (!sentEOS) {
-    sendEOS();
+    ichabod.sendEOS();
+    sentEOS = true;
+    setTimeout(() => {
+      debug("onInterrupt.eosTimeout: EOS timer expired");
+      ichabod.interrupt();
+      onInterrupt();
+    }, 300000);
   }
   if (interruptCount > 1) {
     console.log(`received ${interruptCount} interrupt signals. force exit.`);

@@ -23,7 +23,12 @@ var tryPostback = function(callbackURL, message) {
   };
   debug(`tryPostback: ${JSON.stringify(postback_options)}`);
   request(postback_options, function(error, response, body) {
-    debug(`Postback to ${callbackURL} returned code ${response.statusCode}`);
+    if (error) {
+      debug(`Postback error: `, error);
+    }
+    if (response) {
+      debug(`Postback to ${callbackURL} returned code ${response.statusCode}`);
+    }
   });
 }
 
@@ -104,10 +109,6 @@ var parseJobArgs = function(args) {
     protocols: ['rtmp']
   })) {
     result.broadcastURL = validator.stripLow(args.broadcastURL);
-  }
-
-  if (args.sipDialout && validator.isSipURI(args.sipDialout)) {
-    result.sipDialout = validator.stripLow(args.sipDialout);
   }
 
   if (validator.isInt(args.width + '', {

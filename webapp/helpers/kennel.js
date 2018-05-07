@@ -37,7 +37,6 @@ const postTask = function(taskArgs, cb) {
   if (args.individualStreamRecord) {
     taskBody.environment.INDIVIDUAL_STREAM_RECORD = 1;
   }
-  taskBody.environment.SIP_DIALOUT = args.sipDialout;
   taskBody.environment.DEBUG = '*.*';
   // both the cluster scheduler and the job need to know about this
   taskBody.environment.REQUESTED_LAUNCH_TIME = args.launchTime;
