@@ -111,10 +111,6 @@ var parseJobArgs = function(args) {
     result.broadcastURL = validator.stripLow(args.broadcastURL);
   }
 
-  if (args.sipDialout && validator.isSipURI(args.sipDialout)) {
-    result.sipDialout = validator.stripLow(args.sipDialout);
-  }
-
   if (validator.isInt(args.width + '', {
     min: config.get("job_limits.min_width"),
     max: config.get("job_limits.max_width")
