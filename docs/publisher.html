@@ -1,0 +1,119 @@
+<html>
+<head>
+  <title>Layout Container Example</title>
+  <!-- <script src="https://static.opentok.com/v2/js/opentok.min.js"></script> -->
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <style type="text/css" media="screen">
+    #layoutContainer {
+      width: 100%;
+      height: 100%;
+      position:relative;
+    }
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color:#262422;
+    }
+    #layoutContainer > div {
+        background-color: #000;
+        display: inline-block;
+
+        transition-property: all;
+        transition-duration: 0.5s;
+    }
+
+    body > div#description {
+        color: #333;
+        margin: 0;
+        width: 100%;
+        text-align: center;
+    }
+    #clock {
+      color: white;
+      text-align: right;
+      position: absolute;
+      bottom: 0px;
+      right: 0px;
+    }
+    </style>
+    <script>
+    function startTime() {
+        var now = new Date();
+        document.getElementById('clock').innerHTML = now.toISOString();
+        var t = setTimeout(startTime, 10);
+    }
+    </script>
+</head>
+<body onload='startTime();'>
+  <div id="layoutContainer">
+    <!-- <div id="publisher"></div> -->
+  </div>
+  <div id="clock"></div>
+</body>
+<script type="text/javascript" charset="utf-8">
+  var layoutContainer = document.getElementById("layoutContainer");
+
+  function getQueryParams(qs) {
+      qs = qs.split("+").join(" ");
+      var params = {},
+          tokens,
+          re = /[?&]?([^=]+)=([^&]*)/g;
+
+      while (tokens = re.exec(qs)) {
+          params[decodeURIComponent(tokens[1])]
+              = decodeURIComponent(tokens[2]);
+      }
+
+      return params;
+  }
+
+  var $_GET = getQueryParams(document.location.search);
+
+  var otUrl;
+  if ($_GET['env'] === 'tbdev') {
+    otUrl = "https://tbdev.tokbox.com/v2/js/opentok.js";
+  } else {
+    otUrl = "https://static.opentok.com/v2/js/opentok.min.js";
+  }
+
+  if ($_GET['disableClock'] === 'true') {
+    document.getElementById('clock').style.display = 'none';
+  }
+
+  // ugly: sequentially load interdependent scripts
+  $.getScript(otUrl, (data, textStatus, jqxhr) => {
+    $.getScript("opentok-layout.min.js", () => {
+      // Initialize the layout container and get a reference to the layout method
+      var layout = initLayoutContainer(layoutContainer, {
+        animate: {
+          duration: 500,
+          easing: "swing"
+        },
+        bigFixedRatio: false,
+        bigClass: "big"
+      }).layout;
+
+      // Below is a normal hello world OpenTok application for v2 of the API
+      // The layout container will redraw when the layout mtehod is called and
+      // adjust the layout accordingly
+      var sessionId = $_GET['sessionId'];
+      var token = $_GET['token'];
+      var apiKey = $_GET['apiKey'];
+      if ($_GET['debug'] === 'true') {
+        OT.setLogLevel(OT.DEBUG);
+      }
+      var session = OT.initSession(sessionId);
+      session.on("connected", function(event){
+
+      }).connect(apiKey, token, function (err) {
+        let publisher = OT.initPublisher('layoutContainer', {
+          insertMode: 'append',
+          audioSource: false
+        });
+        session.publish(publisher, console.log);
+        layout();
+      });
+    });
+  });
+
+</script>
+</html>
